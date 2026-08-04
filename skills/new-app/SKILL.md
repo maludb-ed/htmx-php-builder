@@ -15,6 +15,7 @@ Before starting, load context from the sibling skills in this plugin:
 - **php-patterns** — the mandatory PHP code structure. Consult before writing any PHP.
 - **php-session-auth** — security rules for the auth build in Phase 2.
 - **malumail-send** — the default email channel (MaluMail API) for reset/verification emails and notifications. Consult in Phase 2 and wherever a feature sends mail.
+- **chat-actions** — the voice-first command bar on every screen: LLM router → actions MCP server → the app's own endpoints. Consult in Phase 1 (action manifest), Phase 2 (command bar in the shell), and Phase 4 (assistant service).
 
 ## The stack (fixed — do not reopen unless the user does)
 
@@ -23,8 +24,9 @@ Before starting, load context from the sibling skills in this plugin:
 | OS | Ubuntu 24.04 |
 | System of record | PostgreSQL 17 |
 | Activity memory | MaluDB (PostgreSQL extensions), fed by application logs |
-| Memory interface | Two MCP servers per app (Python + FastMCP), per the mcp-servers skill |
-| AMA agent | Claude Agent SDK service (Python), consuming the MCP servers |
+| Memory interface | Two client-facing read MCP servers per app (Python + FastMCP), per the mcp-servers skill |
+| Action interface | One localhost-only actions MCP server per app (navigation + app actions), per the chat-actions skill |
+| Assistant | One unified Claude Agent SDK service (Python) — AMA answers, chat actions, navigation |
 | Web server | Apache (also reverse-proxies the MCP servers and AMA service) |
 | Application | PHP (vanilla, per php-patterns skill) |
 | UI | Bootstrap 5.3 per the design-system skill |
@@ -51,15 +53,16 @@ Design the complete database up front — every table for every planned feature,
 3. Include the MaluDB extension setup and ingestion wiring.
 4. Every table gets created_at/updated_at and, where rows are user-owned, the owning user id. Use `bigint generated always as identity` primary keys unless the user specifies otherwise.
 5. **Design the MCP tool surface** (per the mcp-servers skill): map every question from the Phase 0 question list to a named tool on the record or activity server, plus one guarded read-only search tool per server. Define the read-only database roles the servers will use. The question list is the contract — a question with no tool is unfinished design.
+6. **Design the action manifest** (per the chat-actions skill): the screen registry (every screen's id, canonical URL, "when the user wants…" description) and the action registry (every performable action with its endpoint, parameters, undo definition, and confirm flag). A screen or action missing from the manifest is unreachable by voice — unfinished design, same as an unanswered question.
 
-**Checkpoint:** user approves the full schema *and* the MCP tool surface before any PHP is written.
+**Checkpoint:** user approves the full schema, the MCP tool surface, *and* the action manifest before any PHP is written.
 
 ## Phase 2 — Authentication and application shell
 
 Goal: at the end of this phase the application *looks and feels exactly like the finished product*, with working login, even though it has no features yet.
 
 1. Build session auth (register, login, logout, reset) in vanilla PHP following the **php-session-auth** skill — all of its non-negotiables apply. The login page offers email/password **and** "Sign in with Google" (server-side OIDC per `references/google-signin.md`); authenticator-app 2FA (per `references/totp-2fa.md`) ships with its enrollment settings page and login challenge page. CSRF is wired for HTMX from the first shell render (meta tag + `htmx:configRequest` listener). Reset and verification emails go through the **malumail-send** skill's `malumail_send()` helper. Auth pages use the design-system minimal auth layout; login/logout/2FA are full page navigations, never swaps.
-2. Build the application shell from the **design-system** skill: the sidebar/header/footer layout, the HTMX content-swap target, an empty dashboard, and the navigation stubs for every planned feature.
+2. Build the application shell from the **design-system** skill: the sidebar/header/footer layout, the HTMX content-swap target, an empty dashboard, the navigation stubs for every planned feature, and the **assistant command bar** (`#assistant-bar`, per chat-actions) wired to a stub handler so the surface exists from the first screen.
 3. Wire activity logging into the shell from the first request: page entry, login/logout events.
 4. Verify on a mobile viewport (375px): navigation collapses correctly, no horizontal scroll, no modals anywhere.
 
@@ -72,15 +75,18 @@ Build one feature at a time, end-to-end, in the order fixed in Phase 0. Each sli
 1. The screens (list / detail / create / edit as needed) generated per the **new-screen** skill — dedicated full pages, never modals.
 2. The PHP handlers per the **php-patterns** skill, against the Phase 1 schema (schema changes at this point are exceptional and need user sign-off).
 3. Activity logging for every action in the slice.
-4. A mobile-viewport check before calling the slice done.
+4. The slice's screens and actions registered in the **action manifest** (chat-actions) — a slice isn't done until it's reachable by voice.
+5. A mobile-viewport check before calling the slice done.
 
 **Checkpoint per slice:** demo the feature, then move to the next.
 
-## Phase 4 — MCP servers and Ask Me Anything
+## Phase 4 — MCP servers and the unified assistant
 
-1. **Build the two MCP servers** designed in Phase 1 (record memory + activity memory) per the mcp-servers skill: Python + FastMCP, read-only roles, systemd units, Apache reverse proxy, per-client bearer tokens. Verify every Phase 0 question is answerable through the tools using MCP Inspector before moving on.
-2. **Build the AMA feature** per [references/ama-implementation.md](references/ama-implementation.md): a Claude Agent SDK service (Python) consuming the two MCP servers, fronted by a PHP/HTMX chat page. The agent reads memories only through MCP.
-3. **Publish the client-facing endpoints**: a settings screen listing the two MCP URLs and managing access tokens, so clients can connect their own AI tools to their memories (SaaS Plus+).
+1. **Build the two read MCP servers** designed in Phase 1 (record memory + activity memory) per the mcp-servers skill: Python + FastMCP, read-only roles, systemd units, Apache reverse proxy, per-client bearer tokens. Verify every Phase 0 question is answerable through the tools using MCP Inspector before moving on.
+2. **Build the actions MCP server** from the Phase 1 action manifest per the chat-actions skill: localhost-only, `navigate` + per-action tools calling the app's own endpoints with signed action tokens, undo support.
+3. **Build the unified assistant** — one Claude Agent SDK service (Python) with all three MCP servers, per [references/ama-implementation.md](references/ama-implementation.md) and chat-actions: the AMA page for full conversations, the command bar on every screen for voice actions and navigation. The agent reads memories and performs actions only through MCP.
+4. **Verify by utterance:** every manifest action and every screen reachable with a one-sentence spoken-style command; every Phase 0 question answerable.
+5. **Publish the client-facing endpoints**: a settings screen listing the two read-MCP URLs and managing access tokens, so clients can connect their own AI tools to their memories (SaaS Plus+). The actions server is never exposed.
 
 ## Hard rules that apply in every phase
 

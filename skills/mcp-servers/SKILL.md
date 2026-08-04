@@ -12,6 +12,8 @@ Every application ships two MCP servers. They are designed with the schema in Ph
 | Record memory | `{app}_records_mcp` | Entities, facts, current truth | PostgreSQL 17, read-only role |
 | Activity memory | `{app}_activity_mcp` | What happened, who, when | MaluDB, read-only role |
 
+(A third, **localhost-only** server — `{app}_actions_mcp` for chat-driven navigation and actions — is specified in the **chat-actions** skill. This skill covers the two client-facing read servers; the read servers never write, and the actions server is never exposed.)
+
 ## Designing the tool surface (Phase 1)
 
 The tool surface is derived from the Phase 0 question list — features are pre-packaged answers to questions, and MCP tools are the same thing for agents.

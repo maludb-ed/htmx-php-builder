@@ -89,6 +89,10 @@ Two adjacent rules:
 - Form save/cancel buttons live in the page header (`.page-header-right-items-wrapper`); forms use the `col-lg-4` label / `col-lg-8` control horizontal grid with `input-group` icon prefixes.
 - Tabs on create/view pages: the card-header nav-tabs pattern (`.card.border-top-0 > .card-header.p-0 > ul.nav.nav-tabs...`).
 
+## Assistant command bar (every screen)
+
+A fixed bottom command bar (`#assistant-bar`, input `#assistant-input`) ships on every screen — the voice-first entry point for chat actions and navigation (see the chat-actions skill). Latest exchange in `#assistant-reply` above the bar; full history in offcanvas `#assistant-transcript` (full-width on mobile); `Ctrl/Cmd+K` or `/` focuses the input. Body reserves bottom padding so the bar never covers content. Confirmation policy: creates/updates act immediately with an Undo affordance; destructive actions always confirm; navigation pushes explicit canonical URLs via `HX-Location`.
+
 ## Auth pages: minimal style
 
 All auth screens (login, register, reset, verify, 404, maintenance) use the **minimal** variants (`auth-*-minimal.html`). The cover and creative variants are not used.
