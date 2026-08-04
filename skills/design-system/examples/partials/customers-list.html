@@ -1,0 +1,296 @@
+<!--
+  FRAGMENT — swapped into #page-content (main.nxl-container > .nxl-content) in index.html.
+  No <html>/<head>/<body>. Contains exactly the two blocks the shell's target expects:
+  .page-header followed by .main-content.
+
+  ASSET PATHS: this markup lives inside index.html once swapped, so relative URLs resolve against
+  examples/ — use `assets/...`, NOT `../assets/...`.
+
+  Table = the canonical "Traffic Reports" pattern (design-decisions.md). No DataTables: search,
+  pagination and filtering are server-rendered and re-fetched over HTMX.
+
+  CRUD SCREEN CONTRACT (design-decisions.md): "Add Customer" primary button at the top in the
+  page-header actions area + an explicit Edit icon button on EVERY row. Both hx-get the SAME
+  full-container form partial into the shell's swap target with hx-push-url — the row buttons
+  key it by record id. No modals, no inline drawer forms, no hidden kebab dropdown.
+
+  hx-push-url carries an explicit same-depth `?screen=...` value rather than "true": pushing a
+  partial's own path would move the document base into partials/ and break every relative
+  `assets/...` and `partials/...` URL that follows. See the header of index.html.
+
+  STATUS COLORS follow the locked vocabulary: success=active, warning=pending, danger=overdue,
+  info=in progress, secondary=inactive/archived, dark=draft. DATES use the medium format.
+-->
+<!-- [ page-header ] start -->
+<div class="page-header" id="customers-list-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Customers</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item">Customers</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <!-- Server-rendered search. Debounced keyup re-fetches ONLY the results region
+                     (#customers-list-results), so the header input keeps focus and caret position.
+                     hx-select pulls #customers-list-results out of the returned document — needed only
+                     because this demo is served as a static file. In PHP the route returns just
+                     that fragment (GET /customers/rows?q=...) and hx-select is dropped. -->
+                <div class="input-group">
+                    <span class="input-group-text"><i class="feather-search"></i></span>
+                    <input type="search" name="q" id="customers-list-search" class="form-control" placeholder="Search customers..." aria-label="Search customers" hx-get="partials/customers-list.html" hx-target="#customers-list-results" hx-select="#customers-list-results" hx-swap="outerHTML" hx-trigger="keyup changed delay:400ms, search" />
+                </div>
+                <!-- CRUD contract, part 1: Add button at the top -> full-container form partial. -->
+                <a href="javascript:void(0);" id="customers-list-add-btn" class="btn btn-primary" hx-get="partials/customer-form.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-add">
+                    <i class="feather-plus me-2"></i>
+                    <span>Add Customer</span>
+                </a>
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content" id="customers-list-content">
+    <div class="row">
+        <!-- #customers-list-results is the inner swap region for search + pagination: everything that
+             changes when the query or page changes, and nothing that does not. -->
+        <div class="col-lg-12" id="customers-list-results">
+            <div class="card stretch stretch-full" id="customers-list-card">
+                <div class="card-header">
+                    <h5 class="card-title">All Customers</h5>
+                    <div class="card-header-action">
+                        <div class="card-header-btn">
+                            <div data-bs-toggle="tooltip" title="Refresh">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning" data-bs-toggle="refresh"> </a>
+                            </div>
+                            <div data-bs-toggle="tooltip" title="Maximize/Minimize">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success" data-bs-toggle="expand"> </a>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown" data-bs-offset="25, 25">
+                                <div data-bs-toggle="tooltip" title="Options">
+                                    <i class="feather-more-vertical"></i>
+                                </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" id="customers-list-card-menu">
+                                <a href="javascript:void(0);" class="dropdown-item" hx-get="partials/customer-form.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-add"><i class="feather-plus"></i>New</a>
+                                <a href="javascript:void(0);" class="dropdown-item"><i class="feather-download"></i>Export CSV</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body custom-card-action p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="customers-list-table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th id="customers-list-col-name">Name</th>
+                                    <th id="customers-list-col-email">Email</th>
+                                    <th id="customers-list-col-phone">Phone</th>
+                                    <th id="customers-list-col-status">Status</th>
+                                    <th id="customers-list-col-created">Created</th>
+                                    <th id="customers-list-col-actions" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-list-tbody">
+                                <tr id="customer-row-1042">
+                                    <td id="customer-row-1042-name">
+                                        <a href="javascript:void(0);" class="hstack gap-3" hx-get="partials/customer-view.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1042">
+                                            <div class="avatar-image avatar-md">
+                                                <img src="assets/images/avatar/1.png" alt="" class="img-fluid" />
+                                            </div>
+                                            <div>
+                                                <span class="wd-10 ht-10 bg-success me-2 d-inline-block rounded-circle"></span>
+                                                <span class="text-truncate-1-line">Alexandra Della</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                    <td id="customer-row-1042-email">alex.della@outlook.com</td>
+                                    <td id="customer-row-1042-phone">+1 202 555 0143</td>
+                                    <td id="customer-row-1042-status"><span class="badge bg-soft-success text-success">Active</span></td>
+                                    <td id="customer-row-1042-created">Jul 12, 2026</td>
+                                    <td id="customer-row-1042-actions" class="text-end">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a id="customer-row-1042-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1042">
+                                                <i class="feather-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="customer-row-1043">
+                                    <td id="customer-row-1043-name">
+                                        <a href="javascript:void(0);" class="hstack gap-3" hx-get="partials/customer-view.html?id=1043" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1043">
+                                            <div class="avatar-image avatar-md">
+                                                <img src="assets/images/avatar/2.png" alt="" class="img-fluid" />
+                                            </div>
+                                            <div>
+                                                <span class="wd-10 ht-10 bg-info me-2 d-inline-block rounded-circle"></span>
+                                                <span class="text-truncate-1-line">Marion Bergman</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                    <td id="customer-row-1043-email">marion.bergman@mail.com</td>
+                                    <td id="customer-row-1043-phone">+1 415 555 0178</td>
+                                    <td id="customer-row-1043-status"><span class="badge bg-soft-info text-info">In Progress</span></td>
+                                    <td id="customer-row-1043-created">Jul 9, 2026</td>
+                                    <td id="customer-row-1043-actions" class="text-end">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a id="customer-row-1043-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1043" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1043">
+                                                <i class="feather-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="customer-row-1044">
+                                    <td id="customer-row-1044-name">
+                                        <a href="javascript:void(0);" class="hstack gap-3" hx-get="partials/customer-view.html?id=1044" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1044">
+                                            <div class="avatar-image avatar-md">
+                                                <img src="assets/images/avatar/3.png" alt="" class="img-fluid" />
+                                            </div>
+                                            <div>
+                                                <span class="wd-10 ht-10 bg-warning me-2 d-inline-block rounded-circle"></span>
+                                                <span class="text-truncate-1-line">Ricardo Fuentes</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                    <td id="customer-row-1044-email">r.fuentes@company.io</td>
+                                    <td id="customer-row-1044-phone">+34 91 555 0102</td>
+                                    <td id="customer-row-1044-status"><span class="badge bg-soft-warning text-warning">Pending</span></td>
+                                    <td id="customer-row-1044-created">Jul 2, 2026</td>
+                                    <td id="customer-row-1044-actions" class="text-end">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a id="customer-row-1044-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1044" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1044">
+                                                <i class="feather-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="customer-row-1045">
+                                    <td id="customer-row-1045-name">
+                                        <a href="javascript:void(0);" class="hstack gap-3" hx-get="partials/customer-view.html?id=1045" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1045">
+                                            <div class="avatar-image avatar-md">
+                                                <img src="assets/images/avatar/4.png" alt="" class="img-fluid" />
+                                            </div>
+                                            <div>
+                                                <span class="wd-10 ht-10 bg-danger me-2 d-inline-block rounded-circle"></span>
+                                                <span class="text-truncate-1-line">Hannah Whitmore</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                    <td id="customer-row-1045-email">hannah.w@northgate.co</td>
+                                    <td id="customer-row-1045-phone">+44 20 7946 0311</td>
+                                    <td id="customer-row-1045-status"><span class="badge bg-soft-danger text-danger">Overdue</span></td>
+                                    <td id="customer-row-1045-created">Jun 28, 2026</td>
+                                    <td id="customer-row-1045-actions" class="text-end">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a id="customer-row-1045-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1045" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1045">
+                                                <i class="feather-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="customer-row-1046">
+                                    <td id="customer-row-1046-name">
+                                        <a href="javascript:void(0);" class="hstack gap-3" hx-get="partials/customer-view.html?id=1046" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1046">
+                                            <div class="avatar-image avatar-md">
+                                                <img src="assets/images/avatar/5.png" alt="" class="img-fluid" />
+                                            </div>
+                                            <div>
+                                                <span class="wd-10 ht-10 bg-secondary me-2 d-inline-block rounded-circle"></span>
+                                                <span class="text-truncate-1-line">Tobias Lindqvist</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                    <td id="customer-row-1046-email">tobias.l@vantage.se</td>
+                                    <td id="customer-row-1046-phone">+46 8 555 0190</td>
+                                    <td id="customer-row-1046-status"><span class="badge bg-soft-secondary text-secondary">Inactive</span></td>
+                                    <td id="customer-row-1046-created">Jun 21, 2026</td>
+                                    <td id="customer-row-1046-actions" class="text-end">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a id="customer-row-1046-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1046" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1046">
+                                                <i class="feather-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="customer-row-1047">
+                                    <td id="customer-row-1047-name">
+                                        <a href="javascript:void(0);" class="hstack gap-3" hx-get="partials/customer-view.html?id=1047" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1047">
+                                            <div class="avatar-image avatar-md">
+                                                <img src="assets/images/avatar/6.png" alt="" class="img-fluid" />
+                                            </div>
+                                            <div>
+                                                <span class="wd-10 ht-10 bg-dark me-2 d-inline-block rounded-circle"></span>
+                                                <span class="text-truncate-1-line">Priya Raghunathan</span>
+                                            </div>
+                                        </a>
+                                    </td>
+                                    <td id="customer-row-1047-email">priya.r@helioworks.in</td>
+                                    <td id="customer-row-1047-phone">+91 22 5550 0164</td>
+                                    <td id="customer-row-1047-status"><span class="badge bg-soft-dark text-dark">Draft</span></td>
+                                    <td id="customer-row-1047-created">Jun 14, 2026</td>
+                                    <td id="customer-row-1047-actions" class="text-end">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a id="customer-row-1047-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1047" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1047">
+                                                <i class="feather-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Server-rendered pagination. Each link re-fetches this same region with a page
+                     param; the server emits the .active / .disabled states. No client-side table JS.
+                     (hx-select here for the same static-file reason as the search input above.) -->
+                <div class="card-footer" id="customers-list-footer">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="fs-12 text-muted" id="customers-list-count">Showing 1 to 6 of 1,284 entries</div>
+                        <nav aria-label="Customer list pages">
+                            <ul class="pagination pagination-sm mb-0" id="customers-list-pagination">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="javascript:void(0);" aria-label="Previous" tabindex="-1">
+                                        <i class="feather-chevron-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item active" aria-current="page">
+                                    <a class="page-link" href="javascript:void(0);" hx-get="partials/customers-list.html?page=1" hx-target="#customers-list-results" hx-select="#customers-list-results" hx-swap="outerHTML">1</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);" hx-get="partials/customers-list.html?page=2" hx-target="#customers-list-results" hx-select="#customers-list-results" hx-swap="outerHTML">2</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);" hx-get="partials/customers-list.html?page=3" hx-target="#customers-list-results" hx-select="#customers-list-results" hx-swap="outerHTML">3</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);" hx-get="partials/customers-list.html?page=2" hx-target="#customers-list-results" hx-select="#customers-list-results" hx-swap="outerHTML" aria-label="Next">
+                                        <i class="feather-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->

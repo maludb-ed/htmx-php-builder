@@ -1,0 +1,41 @@
+---
+name: design-system
+description: The mandatory UI design system for applications built with this plugin — Bootstrap 5.3 admin template (nxl theme) with fixed layout, component patterns, and mobile-first rules. Use before generating or editing ANY page, screen, partial, or HTML in an application built with this plugin, and when the user mentions look and feel, styling, layout, or UI consistency.
+---
+
+# Design System
+
+Every screen in every application must look like it came from the same template, because it did. The single source of truth is the reference set in this skill — extracted from the licensed Bootstrap 5.3 admin template the applications are built on.
+
+## References (read the one you need before writing markup)
+
+- [references/design-decisions.md](references/design-decisions.md) — **read first; overrides everything else where they conflict.** The locked, project-independent design choices (canonical table = the "Traffic Reports" pattern with server-rendered pagination, interaction defaults, and the running list of pinned decisions).
+- [references/layout-skeleton.html](references/layout-skeleton.html) — the canonical app-shell page: head/CSS includes, sidebar navigation (`nxl-navigation`), header (`nxl-header`), the main content container HTMX swaps into (marked `MAIN CONTENT TARGET`), footer, script includes.
+- [references/components.md](references/components.md) — canonical markup for page headers, cards, list/table pages, create/edit forms, detail pages, buttons, badges, avatars, tabs.
+- [references/auth-layout.html](references/auth-layout.html) — the auth-page skeleton (login/register/reset use this, minimal style).
+- [references/assets.md](references/assets.md) — which CSS/JS files each page includes and in what order.
+- [examples/](examples/) — a working, trimmed example application: the shell (`index.html`), HTMX partials for the list/form/view screens, the auth page, and the actual theme CSS/JS/font assets. **Copy `examples/assets/` into every new application verbatim** — this is what guarantees pixel-identical styling. Use the example pages as the starting point for Phase 2's shell and for each screen type.
+
+## Non-negotiable rules
+
+1. **Copy, don't compose.** Take the exact markup structure and class names from the references. Do not substitute generic Bootstrap markup where the template has its own pattern (`nxl-*` classes are load-bearing — the theme CSS/JS depends on the exact nesting).
+2. **No modal forms or display surfaces.** No `.modal` for anything that shows or collects data — create/edit/detail are dedicated full pages; quick edits swap inline via HTMX; offcanvas drawers only for filters/quick views, full-width on mobile. **Confirmations are exempt:** `hx-confirm` (the browser confirm dialog) is the standard guard on destructive actions.
+3. **Mobile first.** Every screen works at 375px: no horizontal page scroll, tables inside `.table-responsive`, action toolbars stack vertically, touch targets ≥ 44px. Check this before declaring any screen done.
+4. **No new styling.** No inline `style=`, no new CSS files, no overriding theme variables without explicit user approval. If a component pattern is missing from `components.md`, add it there (from the original template) first, then use it.
+5. **Assets are fixed.** Include exactly the CSS/JS listed in `assets.md`, in that order. Page-specific init scripts follow the template's naming convention and are loaded only on their page. When content arrives via HTMX swap, re-run the page-specific init in the `htmx:afterSwap` handler — theme JS bound at load time does not see swapped-in DOM.
+6. **HTMX is the interactivity layer.** Server-rendered partials swapped into the main content target; `hx-push-url` for navigable screens; no SPA frameworks, no jQuery beyond what the theme itself ships.
+7. **Every meaningful element gets a unique, stable, kebab-case `id`** per the naming scheme in `design-decisions.md` (`left-sidenav`, `customers-list-table`, `customer-form-field-email`, `customer-row-{id}`). IDs are the change-request vocabulary: never rename one once shipped, prefix screen-level ids with the screen name, and interpolate record keys into loop-generated ids.
+
+## Template mechanics (load-bearing — violating these silently breaks the theme)
+
+- **Swap target (DECIDED):** screen partials carry their own `.page-header` (title/breadcrumb/actions/search) plus `.main-content`, and swap into the whole of `.nxl-content`, which the shell gives `id="page-content"`. The `.page-header` block is a sibling of `.main-content` inside `.nxl-content`; sidebar, header, and footer sit safely outside. (`.main-content` alone remains the target only for sub-page swaps like pagination or inline edits.)
+- **NEVER use `hx-push-url="true"` — always an explicit canonical URL.** The `"true"` value pushes the *request's own path*; in this pattern the request path is a partial route, so it moves the document base and breaks every subsequent relative URL (verified failure: second navigation 404s). The only permitted form is an explicit value naming the real screen URL (e.g. fetch `/customers/partial`, `hx-push-url="/customers"`). This is a hard rule with no exceptions — treat `hx-push-url="true"` in any generated code as a bug.
+- **Theme state lives on `<html>`, not `<body>`:** dark mode is the `app-skin-dark` class on `<html>`, persisted in localStorage and applied by `theme-customizer-init.min.js` — that script must be the **last** script on every page or dark mode silently dies. The customizer panel partial itself is optional.
+- **Asset order is fixed:** `theme.min.css` last in `<head>`; `vendors.min.js` first, then `common-init.min.js`, then the page-specific init, then `theme-customizer-init.min.js` last (details in `assets.md`).
+- **All template init runs on document-ready** — DataTables, select2, datepickers, tooltips will not see HTMX-swapped DOM. Re-initialize the page-specific pieces in an `htmx:afterSwap` handler.
+- **List pages and pagination:** DECIDED — application list screens use the "Traffic Reports" plain-table pattern with server-rendered Bootstrap pagination (see `design-decisions.md`); DataTables is not used on application screens, so there is nothing to re-init after a table swap.
+- **Selects are select2-driven** via `data-select2-selector="..."` attributes (with `data-bg="bg-success"` etc. for colored status/tag chips); the select2 CSS/JS must be present wherever they're used.
+- **Form save/cancel buttons live in the page header** (`.page-header-right-items-wrapper`), not at the bottom of the form; forms use the horizontal `col-lg-4` label / `col-lg-8` control grid with `input-group` icon prefixes.
+- **Tabs are the card header:** `.card.border-top-0 > .card-header.p-0 > ul.nav.nav-tabs.flex-wrap.w-100.text-center` with `li.nav-item.flex-fill.border-top` — identical on create and view pages.
+- **Mobile navigation:** the hamburger `a#mobile-collapse` toggles `mob-navigation-active` on `nav.nxl-navigation` (theme JS adds the overlay); the desktop mini-sidebar toggles the `minimenu` class on `<html>`. Keep those ids/classes intact in the layout. Page-header action items collapse into a mobile offcanvas via the `.page-header-right-open-toggle` / `-close-toggle` elements — keep them in every generated page header.
+- **Icons are font-based** (feather / bs-icons), not inline SVG.

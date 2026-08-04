@@ -1,0 +1,167 @@
+<!--
+  FRAGMENT — swapped into #page-content in index.html. No <html>/<head>/<body>.
+  Contains exactly .page-header followed by .main-content.
+  ASSET PATHS resolve against examples/ (the shell) — `assets/...`, never `../assets/...`.
+  Layout trimmed from customers-view.html: left profile/summary card + right tabbed detail card.
+  Status colors and the medium date format follow the locked vocabulary in design-decisions.md.
+-->
+<!-- [ page-header ] start -->
+<div class="page-header" id="customer-view-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Customer</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);" id="customer-view-breadcrumb-customers" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">Customers</a>
+            </li>
+            <li class="breadcrumb-item">Alexandra Della</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <a id="customer-view-back-btn" href="javascript:void(0);" class="btn btn-light-brand" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back</span>
+                </a>
+                <!-- Edit goes to the same full-container form partial, keyed by record id. -->
+                <a id="customer-view-edit-btn" href="javascript:void(0);" class="btn btn-primary" hx-get="partials/customer-form.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1042">
+                    <i class="feather-edit me-2"></i>
+                    <span>Edit</span>
+                </a>
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content" id="customer-view-content">
+    <div class="row">
+        <!-- LEFT: profile summary panel -->
+        <div class="col-xxl-4 col-xl-6">
+            <div class="card stretch stretch-full" id="customer-view-profile-card">
+                <div class="card-body">
+                    <div class="mb-4 text-center">
+                        <div class="wd-150 ht-150 mx-auto mb-3 position-relative">
+                            <div class="avatar-image wd-150 ht-150 border border-5 border-gray-3">
+                                <img src="assets/images/avatar/1.png" alt="" class="img-fluid" />
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <a href="javascript:void(0);" class="fs-14 fw-bold d-block" id="customer-view-name">Alexandra Della</a>
+                            <a href="javascript:void(0);" class="fs-12 fw-normal text-muted d-block" id="customer-view-email">alex.della@outlook.com</a>
+                            <span class="badge bg-soft-success text-success mt-2" id="customer-view-status">Active</span>
+                        </div>
+                    </div>
+                    <ul class="list-unstyled mb-4">
+                        <li class="hstack justify-content-between mb-4" id="customer-view-info-location">
+                            <span class="text-muted fw-medium hstack gap-3"><i class="feather-map-pin"></i>Location</span>
+                            <a href="javascript:void(0);" class="float-end">California, USA</a>
+                        </li>
+                        <li class="hstack justify-content-between mb-4" id="customer-view-info-phone">
+                            <span class="text-muted fw-medium hstack gap-3"><i class="feather-phone"></i>Phone</span>
+                            <a href="javascript:void(0);" class="float-end">+1 202 555 0143</a>
+                        </li>
+                        <li class="hstack justify-content-between mb-0" id="customer-view-info-email">
+                            <span class="text-muted fw-medium hstack gap-3"><i class="feather-mail"></i>Email</span>
+                            <a href="javascript:void(0);" class="float-end">alex.della@outlook.com</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex gap-2 text-center pt-4">
+                        <a href="javascript:void(0);" class="w-50 btn btn-light-brand" id="customer-view-delete-btn">
+                            <i class="feather-trash-2 me-2"></i>
+                            <span>Delete</span>
+                        </a>
+                        <a id="customer-view-profile-edit-btn" href="javascript:void(0);" class="w-50 btn btn-primary" hx-get="partials/customer-form.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1042">
+                            <i class="feather-edit me-2"></i>
+                            <span>Edit</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- RIGHT: tabbed detail panel -->
+        <div class="col-xxl-8 col-xl-6">
+            <div class="card border-top-0" id="customer-view-detail-card">
+                <div class="card-header p-0">
+                    <ul class="nav nav-tabs flex-wrap w-100 text-center customers-nav-tabs" id="customer-view-tabs" role="tablist">
+                        <li class="nav-item flex-fill border-top" role="presentation">
+                            <a href="javascript:void(0);" id="customer-view-tab-overview" class="nav-link active" data-bs-toggle="tab" data-bs-target="#customer-view-pane-overview" role="tab">Overview</a>
+                        </li>
+                        <li class="nav-item flex-fill border-top" role="presentation">
+                            <a href="javascript:void(0);" id="customer-view-tab-billing" class="nav-link" data-bs-toggle="tab" data-bs-target="#customer-view-pane-billing" role="tab">Billing</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active p-4" id="customer-view-pane-overview" role="tabpanel">
+                        <div class="profile-details mb-5">
+                            <div class="mb-4 d-flex align-items-center justify-content-between">
+                                <h5 class="fw-bold mb-0">Profile Details:</h5>
+                                <a href="javascript:void(0);" id="customer-view-detail-edit-btn" class="btn btn-sm btn-light-brand" hx-get="partials/customer-form.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1042">Edit Profile</a>
+                            </div>
+                            <div class="row g-0 mb-4" id="customer-view-detail-fullname">
+                                <div class="col-sm-6 text-muted">Full Name:</div>
+                                <div class="col-sm-6 fw-semibold">Alexandra Della</div>
+                            </div>
+                            <div class="row g-0 mb-4" id="customer-view-detail-email">
+                                <div class="col-sm-6 text-muted">Email Address:</div>
+                                <div class="col-sm-6 fw-semibold">alex.della@outlook.com</div>
+                            </div>
+                            <div class="row g-0 mb-4" id="customer-view-detail-phone">
+                                <div class="col-sm-6 text-muted">Phone:</div>
+                                <div class="col-sm-6 fw-semibold">+1 202 555 0143</div>
+                            </div>
+                            <div class="row g-0 mb-4" id="customer-view-detail-status">
+                                <div class="col-sm-6 text-muted">Status:</div>
+                                <div class="col-sm-6 fw-semibold">
+                                    <span class="badge bg-soft-success text-success">Active</span>
+                                </div>
+                            </div>
+                            <div class="row g-0 mb-4" id="customer-view-detail-plan">
+                                <div class="col-sm-6 text-muted">Plan:</div>
+                                <div class="col-sm-6 fw-semibold">Business <small class="text-muted">(annual)</small></div>
+                            </div>
+                            <!-- Detail views may carry the exact timestamp; table cells never do. -->
+                            <div class="row g-0 mb-4" id="customer-view-detail-created">
+                                <div class="col-sm-6 text-muted">Created:</div>
+                                <div class="col-sm-6 fw-semibold" data-bs-toggle="tooltip" title="2026-07-12 14:30:07 UTC">Jul 12, 2026 &middot; 2:30 PM</div>
+                            </div>
+                            <div class="row g-0" id="customer-view-detail-address">
+                                <div class="col-sm-6 text-muted">Billing Address:</div>
+                                <div class="col-sm-6 fw-semibold">1180 Sutter St, San Francisco, CA</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade p-4" id="customer-view-pane-billing" role="tabpanel">
+                        <div class="mb-4 d-flex align-items-center justify-content-between">
+                            <h5 class="fw-bold mb-0">Billing:</h5>
+                        </div>
+                        <div class="row g-0 mb-4" id="customer-view-detail-payment-method">
+                            <div class="col-sm-6 text-muted">Payment Method:</div>
+                            <div class="col-sm-6 fw-semibold">Visa &bull;&bull;&bull;&bull; 4242</div>
+                        </div>
+                        <div class="row g-0" id="customer-view-detail-next-invoice">
+                            <div class="col-sm-6 text-muted">Next Invoice:</div>
+                            <div class="col-sm-6 fw-semibold">Aug 12, 2026</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->

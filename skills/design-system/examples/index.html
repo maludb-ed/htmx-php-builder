@@ -1,0 +1,527 @@
+<!--
+  EXAMPLE APP SHELL — Duralux ("nxl-") + HTMX.
+  Built from references/layout-skeleton.html; all decisions per references/design-decisions.md.
+
+  SWAP TARGET: layout-skeleton marks `.main-content` as the HTMX target, but every screen in this
+  app supplies its own page-header (title, breadcrumb, Save/Cancel or search actions). The swap
+  boundary is therefore raised one level to `.nxl-content`, given id="page-content" below, and
+  partials ship BOTH `.page-header` and `.main-content`. Everything outside it (sidebar, header,
+  footer) is persistent.
+
+  ASSET PATHS: partials are swapped INTO this document, so browsers resolve their relative URLs
+  against THIS file's location (examples/). Every asset reference — in the shell and in every
+  partial — is therefore `assets/...`. Never `../assets/...`.
+
+  !! hx-push-url AND RELATIVE PATHS !!
+  Relative URLs resolve against the CURRENT document URL, and hx-push-url rewrites it. So
+  hx-push-url="true" (which pushes the partial's own path, e.g. /partials/customer-form.html)
+  silently repoints every later `assets/...` and `partials/...` URL into /partials/ — images
+  404 and the next swap 404s. Every hx-push-url here therefore pushes an explicit SAME-DEPTH
+  value (`?screen=...`) so the document URL never leaves examples/.
+  In the PHP build this stops being a concern: routes are root-relative (`/customers`,
+  `/customers/42/edit`) and so are the asset URLs.
+-->
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="keyword" content="" />
+    <meta name="author" content="flexilecode" />
+    <!--! BEGIN: Apps Title-->
+    <title>Example App || Dashboard</title>
+    <!--! END:  Apps Title-->
+    <!--! BEGIN: Favicon-->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico" />
+    <!--! END: Favicon-->
+    <!--! BEGIN: Bootstrap CSS-->
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css" />
+    <!--! END: Bootstrap CSS-->
+    <!--! BEGIN: Vendors CSS-->
+    <link rel="stylesheet" type="text/css" href="assets/vendors/css/vendors.min.css" />
+    <!-- No page-specific vendor CSS: no DataTables, no select2, no daterangepicker on app screens
+         (see design-decisions.md). If a screen ever needs select2, add select2.min.css HERE,
+         above theme.min.css — theme.min.css must always load last. -->
+    <!--! END: Vendors CSS-->
+    <!--! BEGIN: Custom CSS-->
+    <link rel="stylesheet" type="text/css" href="assets/css/theme.min.css" />
+    <!--! END: Custom CSS-->
+</head>
+
+<body>
+    <!--! ================================================================ !-->
+    <!--! [Start] Navigation Manu !-->
+    <!--! ================================================================ !-->
+    <nav class="nxl-navigation" id="left-sidenav">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand" id="sidenav-brand">
+                    <img src="assets/images/logo-full.png" alt="" class="logo logo-lg" />
+                    <img src="assets/images/logo-abbr.png" alt="" class="logo logo-sm" />
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="nxl-navbar" id="sidenav-menu">
+                    <li class="nxl-item nxl-caption">
+                        <label>Navigation</label>
+                    </li>
+                    <!-- Dashboard: a plain full-page load (it re-runs the shell's own scripts). -->
+                    <li class="nxl-item">
+                        <a href="index.html" class="nxl-link" id="nav-dashboard">
+                            <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                            <span class="nxl-mtext">Dashboard</span>
+                        </a>
+                    </li>
+                    <!-- Menu item WITH submenu: li.nxl-item.nxl-hasmenu; JS adds .nxl-trigger to the open li.
+                         The parent <a> is href="javascript:void(0);"; real links live in the nxl-submenu items.
+                         Submenu links are HTMX swaps into #page-content.
+                         NOTE on hx-push-url: an explicit same-depth `?screen=...` value, never
+                         "true" — see the base-URL warning in the file header. In the PHP build
+                         these become real routes (e.g. /customers) and the server returns the
+                         fragment when the HX-Request header is present, the whole shell otherwise. -->
+                    <li class="nxl-item nxl-hasmenu">
+                        <a href="javascript:void(0);" class="nxl-link" id="nav-customers">
+                            <span class="nxl-micon"><i class="feather-users"></i></span>
+                            <span class="nxl-mtext">Customers</span><span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                        </a>
+                        <ul class="nxl-submenu">
+                            <li class="nxl-item">
+                                <a id="nav-customers-list" class="nxl-link" href="javascript:void(0);" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">Customer List</a>
+                            </li>
+                            <li class="nxl-item">
+                                <a id="nav-customers-add" class="nxl-link" href="javascript:void(0);" hx-get="partials/customer-form.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-add">Add Customer</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- Disabled-looking placeholder item (no href target, not focusable). -->
+                    <li class="nxl-item">
+                        <a id="nav-ama" href="javascript:void(0);" class="nxl-link text-muted" aria-disabled="true" tabindex="-1" style="pointer-events: none; opacity: 0.55">
+                            <span class="nxl-micon"><i class="feather-message-circle"></i></span>
+                            <span class="nxl-mtext">Ask Me Anything</span>
+                            <span class="badge bg-soft-primary text-primary ms-2">Soon</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!--! ================================================================ !-->
+    <!--! [End]  Navigation Manu !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! [Start] Header !-->
+    <!--! ================================================================ !-->
+    <header class="nxl-header" id="top-header">
+        <div class="header-wrapper">
+            <!--! [Start] Header Left !-->
+            <div class="header-left d-flex align-items-center gap-4">
+                <!-- #mobile-collapse toggles class "mob-navigation-active" on nav.nxl-navigation. -->
+                <a href="javascript:void(0);" class="nxl-head-mobile-toggler" id="mobile-collapse">
+                    <div class="hamburger hamburger--arrowturn">
+                        <div class="hamburger-box">
+                            <div class="hamburger-inner"></div>
+                        </div>
+                    </div>
+                </a>
+                <!-- Desktop mini-sidebar toggle: adds/removes class "minimenu" on <html> (common-init.min.js). -->
+                <div class="nxl-navigation-toggle">
+                    <a href="javascript:void(0);" id="menu-mini-button">
+                        <i class="feather-align-left"></i>
+                    </a>
+                    <a href="javascript:void(0);" id="menu-expend-button" style="display: none">
+                        <i class="feather-arrow-right"></i>
+                    </a>
+                </div>
+                <!-- OMITTED on purpose: the template's nxl-lavel-mega-menu block. -->
+            </div>
+            <!--! [End] Header Left !-->
+            <!--! [Start] Header Right !-->
+            <!-- OMITTED on purpose: language flags, email/chat/timesheet/notification demo dropdowns. -->
+            <div class="header-right ms-auto">
+                <div class="d-flex align-items-center">
+                    <!-- User avatar dropdown -->
+                    <div class="dropdown nxl-h-item">
+                        <a id="header-profile-toggle" href="javascript:void(0);" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
+                            <img src="assets/images/avatar/1.png" alt="user-image" class="img-fluid user-avtar me-0" />
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown" id="header-profile-menu">
+                            <div class="dropdown-header">
+                                <div class="d-flex align-items-center">
+                                    <img src="assets/images/avatar/1.png" alt="user-image" class="img-fluid user-avtar" />
+                                    <div>
+                                        <h6 class="text-dark mb-0">Alexandra Della <span class="badge bg-soft-success text-success ms-1">PRO</span></h6>
+                                        <span class="fs-12 fw-medium text-muted">alex.della@outlook.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="javascript:void(0);" class="dropdown-item" id="header-profile-details">
+                                <i class="feather-user"></i>
+                                <span>Profile Details</span>
+                            </a>
+                            <a href="javascript:void(0);" class="dropdown-item" id="header-account-settings">
+                                <i class="feather-settings"></i>
+                                <span>Account Settings</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="auth-login.html" class="dropdown-item" id="header-logout">
+                                <i class="feather-log-out"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--! [End] Header Right !-->
+        </div>
+    </header>
+    <!--! ================================================================ !-->
+    <!--! [End] Header !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! [Start] Main Content !-->
+    <!--! ================================================================ !-->
+    <main class="nxl-container">
+        <!-- ############ HTMX SWAP TARGET ############
+             Everything inside #page-content is replaced per screen: .page-header + .main-content.
+             Partials must therefore contain exactly those two blocks and nothing else. -->
+        <div class="nxl-content" id="page-content">
+            <!-- [ page-header ] start -->
+            <div class="page-header" id="dashboard-header">
+                <div class="page-header-left d-flex align-items-center">
+                    <div class="page-header-title">
+                        <h5 class="m-b-10">Dashboard</h5>
+                    </div>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item">Dashboard</li>
+                    </ul>
+                </div>
+                <div class="page-header-right ms-auto">
+                    <div class="page-header-right-items">
+                        <div class="d-flex d-md-none">
+                            <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                                <i class="feather-arrow-left me-2"></i>
+                                <span>Back</span>
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                            <a href="javascript:void(0);" id="dashboard-add-customer-btn" class="btn btn-primary" hx-get="partials/customer-form.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-add">
+                                <i class="feather-plus me-2"></i>
+                                <span>Add Customer</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="d-md-none d-flex align-items-center">
+                        <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                            <i class="feather-align-right fs-20"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- [ page-header ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="main-content" id="dashboard-content">
+                <div class="row">
+                    <!-- [Stat cards] start — no charts, no apexcharts/daterangepicker dependency. -->
+                    <div class="col-xxl-4 col-md-6" id="dashboard-stat-total-customers">
+                        <div class="card stretch stretch-full">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-4">
+                                    <div class="d-flex gap-4 align-items-center">
+                                        <div class="avatar-text avatar-lg bg-gray-200">
+                                            <i class="feather-users"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-dark"><span class="counter">1284</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Total Customers</h3>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0);" class="">
+                                        <i class="feather-more-vertical"></i>
+                                    </a>
+                                </div>
+                                <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Active this month</a>
+                                        <div class="w-100 text-end">
+                                            <span class="fs-12 text-dark">912</span>
+                                            <span class="fs-11 text-muted">(71%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 71%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-4 col-md-6" id="dashboard-stat-new-this-month">
+                        <div class="card stretch stretch-full">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-4">
+                                    <div class="d-flex gap-4 align-items-center">
+                                        <div class="avatar-text avatar-lg bg-gray-200">
+                                            <i class="feather-user-plus"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-dark"><span class="counter">86</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">New This Month</h3>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0);" class="">
+                                        <i class="feather-more-vertical"></i>
+                                    </a>
+                                </div>
+                                <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Against target</a>
+                                        <div class="w-100 text-end">
+                                            <span class="fs-12 text-dark">86 / 120</span>
+                                            <span class="fs-11 text-muted">(72%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 72%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-4 col-md-6" id="dashboard-stat-pending-review">
+                        <div class="card stretch stretch-full">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-4">
+                                    <div class="d-flex gap-4 align-items-center">
+                                        <div class="avatar-text avatar-lg bg-gray-200">
+                                            <i class="feather-alert-circle"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-dark"><span class="counter">37</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Pending Review</h3>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0);" class="">
+                                        <i class="feather-more-vertical"></i>
+                                    </a>
+                                </div>
+                                <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Older than 7 days</a>
+                                        <div class="w-100 text-end">
+                                            <span class="fs-12 text-dark">11</span>
+                                            <span class="fs-11 text-muted">(30%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- [Stat cards] end -->
+                    <!-- [Recent Customers — canonical "Traffic Reports" table pattern] start -->
+                    <div class="col-lg-12" id="dashboard-recent">
+                        <div class="card stretch stretch-full">
+                            <div class="card-header">
+                                <h5 class="card-title">Recent Customers</h5>
+                                <div class="card-header-action">
+                                    <div class="card-header-btn">
+                                        <div data-bs-toggle="tooltip" title="Refresh">
+                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning" data-bs-toggle="refresh"> </a>
+                                        </div>
+                                        <div data-bs-toggle="tooltip" title="Maximize/Minimize">
+                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success" data-bs-toggle="expand"> </a>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown" data-bs-offset="25, 25">
+                                            <div data-bs-toggle="tooltip" title="Options">
+                                                <i class="feather-more-vertical"></i>
+                                            </div>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end" id="dashboard-recent-menu">
+                                            <a href="javascript:void(0);" class="dropdown-item" hx-get="partials/customer-form.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-add"><i class="feather-plus"></i>New</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers"><i class="feather-list"></i>View All</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body custom-card-action p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="dashboard-recent-table">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th id="dashboard-recent-col-name">Name</th>
+                                                <th id="dashboard-recent-col-email">Email</th>
+                                                <th id="dashboard-recent-col-plan">Plan</th>
+                                                <th id="dashboard-recent-col-created">Created</th>
+                                                <th id="dashboard-recent-col-actions" class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashboard-recent-tbody">
+                                            <tr id="customer-row-1042">
+                                                <td id="customer-row-1042-name">
+                                                    <a href="javascript:void(0);" hx-get="partials/customer-view.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1042">
+                                                        <span class="wd-10 ht-10 bg-success me-2 d-inline-block rounded-circle"></span>
+                                                        <span>Alexandra Della</span>
+                                                    </a>
+                                                </td>
+                                                <td id="customer-row-1042-email">alex.della@outlook.com</td>
+                                                <td id="customer-row-1042-plan">Business <small class="text-muted">(annual)</small></td>
+                                                <td id="customer-row-1042-created">Jul 12, 2026</td>
+                                                <td id="customer-row-1042-actions" class="text-end">
+                                                    <div class="hstack gap-2 justify-content-end">
+                                                        <a id="customer-row-1042-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1042" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1042">
+                                                            <i class="feather-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="customer-row-1043">
+                                                <td id="customer-row-1043-name">
+                                                    <a href="javascript:void(0);" hx-get="partials/customer-view.html?id=1043" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1043">
+                                                        <span class="wd-10 ht-10 bg-info me-2 d-inline-block rounded-circle"></span>
+                                                        <span>Marion Bergman</span>
+                                                    </a>
+                                                </td>
+                                                <td id="customer-row-1043-email">marion.bergman@mail.com</td>
+                                                <td id="customer-row-1043-plan">Starter <small class="text-muted">(monthly)</small></td>
+                                                <td id="customer-row-1043-created">Jul 9, 2026</td>
+                                                <td id="customer-row-1043-actions" class="text-end">
+                                                    <div class="hstack gap-2 justify-content-end">
+                                                        <a id="customer-row-1043-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1043" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1043">
+                                                            <i class="feather-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="customer-row-1044">
+                                                <td id="customer-row-1044-name">
+                                                    <a href="javascript:void(0);" hx-get="partials/customer-view.html?id=1044" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1044">
+                                                        <span class="wd-10 ht-10 bg-warning me-2 d-inline-block rounded-circle"></span>
+                                                        <span>Ricardo Fuentes</span>
+                                                    </a>
+                                                </td>
+                                                <td id="customer-row-1044-email">r.fuentes@company.io</td>
+                                                <td id="customer-row-1044-plan">Business <small class="text-muted">(trial)</small></td>
+                                                <td id="customer-row-1044-created">Jul 2, 2026</td>
+                                                <td id="customer-row-1044-actions" class="text-end">
+                                                    <div class="hstack gap-2 justify-content-end">
+                                                        <a id="customer-row-1044-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1044" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1044">
+                                                            <i class="feather-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="customer-row-1045">
+                                                <td id="customer-row-1045-name">
+                                                    <a href="javascript:void(0);" hx-get="partials/customer-view.html?id=1045" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1045">
+                                                        <span class="wd-10 ht-10 bg-danger me-2 d-inline-block rounded-circle"></span>
+                                                        <span>Hannah Whitmore</span>
+                                                    </a>
+                                                </td>
+                                                <td id="customer-row-1045-email">hannah.w@northgate.co</td>
+                                                <td id="customer-row-1045-plan">Starter <small class="text-muted">(overdue)</small></td>
+                                                <td id="customer-row-1045-created">Jun 28, 2026</td>
+                                                <td id="customer-row-1045-actions" class="text-end">
+                                                    <div class="hstack gap-2 justify-content-end">
+                                                        <a id="customer-row-1045-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1045" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1045">
+                                                            <i class="feather-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="customer-row-1046">
+                                                <td id="customer-row-1046-name">
+                                                    <a href="javascript:void(0);" hx-get="partials/customer-view.html?id=1046" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer&amp;id=1046">
+                                                        <span class="wd-10 ht-10 bg-secondary me-2 d-inline-block rounded-circle"></span>
+                                                        <span>Tobias Lindqvist</span>
+                                                    </a>
+                                                </td>
+                                                <td id="customer-row-1046-email">tobias.l@vantage.se</td>
+                                                <td id="customer-row-1046-plan">Enterprise <small class="text-muted">(annual)</small></td>
+                                                <td id="customer-row-1046-created">Jun 21, 2026</td>
+                                                <td id="customer-row-1046-actions" class="text-end">
+                                                    <div class="hstack gap-2 justify-content-end">
+                                                        <a id="customer-row-1046-edit-btn" href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip" title="Edit" hx-get="partials/customer-form.html?id=1046" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customer-edit&amp;id=1046">
+                                                            <i class="feather-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- [Recent Customers] end -->
+                </div>
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+        <!-- [ Footer ] start -->
+        <!-- NOTE: footer sits INSIDE main.nxl-container, after .nxl-content — outside the swap target. -->
+        <footer class="footer" id="page-footer">
+            <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
+                <span>Copyright &copy;</span>
+                <script>
+                    document.write(new Date().getFullYear());
+                </script>
+            </p>
+            <div class="d-flex align-items-center gap-4">
+                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase" id="footer-help">Help</a>
+                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase" id="footer-terms">Terms</a>
+                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase" id="footer-privacy">Privacy</a>
+            </div>
+        </footer>
+        <!-- [ Footer ] end -->
+    </main>
+    <!--! ================================================================ !-->
+    <!--! [End] Main Content !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! Footer Script !-->
+    <!--! ================================================================ !-->
+    <!--! BEGIN: HTMX !-->
+    <!-- DEV ONLY. A production app must vendor htmx locally (assets/vendors/js/htmx.min.js) and
+         reference it from there: a CDN is a third-party runtime dependency, an unpinned supply-chain
+         surface, and a hard failure on an offline/intranet deployment. -->
+    <script src="https://unpkg.com/htmx.org@2"></script>
+    <script>
+        // Per-screen re-initialisation after an HTMX swap.
+        // Bootstrap components created by common-init.min.js on DOMContentLoaded do NOT exist for
+        // markup injected later, so anything constructed imperatively must be rebuilt here.
+        document.body.addEventListener("htmx:afterSwap", function (evt) {
+            if (evt.detail.target.id !== "page-content") return;
+            // Tooltips are the common case — the swapped-in cards/tables carry data-bs-toggle="tooltip".
+            evt.detail.target.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new bootstrap.Tooltip(el);
+            });
+            // Popovers, if a screen uses them:
+            //   ...querySelectorAll('[data-bs-toggle="popover"]').forEach(el => new bootstrap.Popover(el));
+            // NOTE: nothing else needs re-init by design — no DataTables and no select2 on app
+            // screens (design-decisions.md). Tabs, dropdowns and collapse are delegated by
+            // Bootstrap and keep working across swaps with no JS at all.
+        });
+    </script>
+    <!--! END: HTMX !-->
+    <!--! BEGIN: Vendors JS !-->
+    <script src="assets/vendors/js/vendors.min.js"></script>
+    <!-- vendors.min.js {always must need to be top} -->
+    <!-- No page-specific vendor JS: no dataTables.min.js, no select2.min.js, no apexcharts. -->
+    <!--! END: Vendors JS !-->
+    <!--! BEGIN: Apps Init  !-->
+    <script src="assets/js/common-init.min.js"></script>
+    <!--! END: Apps Init !-->
+    <!--! BEGIN: Theme Customizer  !-->
+    <script src="assets/js/theme-customizer-init.min.js"></script>
+    <!--! END: Theme Customizer !-->
+</body>
+
+</html>

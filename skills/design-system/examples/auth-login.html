@@ -1,0 +1,109 @@
+<!--
+  STANDALONE PAGE — from auth-login-minimal.html (the "minimal" auth style locked in
+  design-decisions.md). Auth pages have NO nxl-navigation / nxl-header / nxl-container and no
+  HTMX: just main.auth-minimal-wrapper > .auth-minimal-inner > .minimal-card-wrapper > .card.
+  TRIMMED: the social-login divider block (decorative, not integral to the layout) and the
+  theme-customizer panel.
+-->
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <meta name="author" content="theme_ocean">
+    <!--! BEGIN: Apps Title-->
+    <title>Example App || Login</title>
+    <!--! END:  Apps Title-->
+    <!--! BEGIN: Favicon-->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <!--! END: Favicon-->
+    <!--! BEGIN: Bootstrap CSS-->
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+    <!--! END: Bootstrap CSS-->
+    <!--! BEGIN: Vendors CSS-->
+    <link rel="stylesheet" type="text/css" href="assets/vendors/css/vendors.min.css">
+    <!--! END: Vendors CSS-->
+    <!--! BEGIN: Custom CSS-->
+    <link rel="stylesheet" type="text/css" href="assets/css/theme.min.css">
+    <!--! END: Custom CSS-->
+</head>
+
+<body>
+    <!--! ================================================================ !-->
+    <!--! [Start] Main Content !-->
+    <!--! ================================================================ !-->
+    <main class="auth-minimal-wrapper" id="auth-login-page">
+        <div class="auth-minimal-inner">
+            <div class="minimal-card-wrapper">
+                <div class="card mb-4 mt-5 mx-4 mx-sm-0 position-relative" id="auth-login-card">
+                    <!-- floating round logo badge overlapping the card top edge -->
+                    <div class="wd-50 bg-white p-2 rounded-circle shadow-lg position-absolute translate-middle top-0 start-50">
+                        <img src="assets/images/logo-abbr.png" alt="" class="img-fluid">
+                    </div>
+                    <div class="card-body p-sm-5">
+                        <h2 class="fs-20 fw-bolder mb-4">Login</h2>
+                        <h4 class="fs-13 fw-bold mb-2">Login to your account</h4>
+                        <p class="fs-12 fw-medium text-muted">Enter your credentials to continue.</p>
+                        <!-- ============ FORM AREA: point action at your auth endpoint ============
+                             In the PHP build this posts to a handler that verifies the password
+                             hash, regenerates the session id, and checks a CSRF token — add the
+                             hidden token input here. Plain form POST, not HTMX: a successful login
+                             must be a full navigation so the shell reloads with the new session. -->
+                        <form action="index.html" method="get" class="w-100 mt-4 pt-2" id="auth-login-form">
+                            <div class="mb-4">
+                                <input type="email" name="email" id="auth-login-field-email" class="form-control" placeholder="Email or Username" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" name="password" id="auth-login-field-password" class="form-control" placeholder="Password" required>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="auth-login-field-remember">
+                                        <label class="custom-control-label c-pointer" for="auth-login-field-remember">Remember Me</label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="javascript:void(0);" class="fs-11 text-primary" id="auth-login-forgot-link">Forget password?</a>
+                                </div>
+                            </div>
+                            <div class="mt-5">
+                                <button type="submit" class="btn btn-lg btn-primary w-100" id="auth-login-submit-btn">Login</button>
+                            </div>
+                        </form>
+                        <!-- ============ END FORM AREA ============ -->
+                        <!-- TRIMMED: the optional social-login divider + Facebook/Twitter/Github
+                             buttons from auth-login-minimal.html. Purely decorative here; re-add
+                             the block from references/auth-layout.html if a project needs OAuth. -->
+                        <div class="mt-5 text-muted">
+                            <span> Don't have an account?</span>
+                            <a href="javascript:void(0);" class="fw-bold" id="auth-login-register-link">Create an Account</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!--! ================================================================ !-->
+    <!--! [End] Main Content !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! Footer Script !-->
+    <!--! ================================================================ !-->
+    <!--! BEGIN: Vendors JS !-->
+    <script src="assets/vendors/js/vendors.min.js"></script>
+    <!-- vendors.min.js {always must need to be top} -->
+    <!--! END: Vendors JS !-->
+    <!--! BEGIN: Apps Init  !-->
+    <script src="assets/js/common-init.min.js"></script>
+    <!--! END: Apps Init !-->
+    <!--! BEGIN: Theme Customizer  !-->
+    <script src="assets/js/theme-customizer-init.min.js"></script>
+    <!--! END: Theme Customizer !-->
+</body>
+
+</html>

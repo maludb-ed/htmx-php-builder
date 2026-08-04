@@ -1,0 +1,212 @@
+<!--
+  FRAGMENT — swapped into #page-content in index.html. No <html>/<head>/<body>.
+  Contains exactly .page-header followed by .main-content.
+
+  ASSET PATHS: resolved against examples/ (the shell's location) — `assets/...`, never `../assets/...`.
+
+  CRUD SCREEN CONTRACT (design-decisions.md): this single partial serves BOTH add and edit. The
+  list page reaches it two ways — the "Add Customer" button in the list page-header (no id, empty
+  form) and the per-row Edit button (?id=<record>, server pre-fills the values). It is a
+  full-container form, never a modal and never an inline drawer.
+
+  Save/Cancel live in the PAGE HEADER, not at the bottom of the form (design-decisions.md).
+-->
+<!-- [ page-header ] start -->
+<div class="page-header" id="customer-form-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <!-- Static demo: hardcoded "Add". In PHP this title, the last breadcrumb crumb and
+                 the Save button label render as Add/Edit depending on whether an id was given. -->
+            <h5 class="m-b-10">Add Customer</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);" id="customer-form-breadcrumb-customers" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">Customers</a>
+            </li>
+            <li class="breadcrumb-item">Add</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <!-- Cancel: straight back to the list. (hx-confirm is reserved for destructive actions, e.g. delete buttons.) -->
+                <a id="customer-form-cancel-btn" href="javascript:void(0);" class="btn btn-light-brand" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">
+                    <i class="feather-x me-2"></i>
+                    <span>Cancel</span>
+                </a>
+                <!-- Save lives here, outside <form>, and is bound to it by the HTML5 `form`
+                     attribute — that fires the form's normal submit event, which htmx intercepts
+                     and turns into the hx-post below. No JS glue needed. -->
+                <button type="submit" form="customer-form" id="customer-form-save-btn" class="btn btn-primary">
+                    <i class="feather-check me-2"></i>
+                    <span>Save Customer</span>
+                </button>
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content" id="customer-form-content">
+    <!-- In PHP: hx-post="/customers" (create) or "/customers/{id}" (update). On success the
+         handler returns the list partial, or sends an HX-Redirect header. -->
+    <form id="customer-form" hx-post="#" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">
+        <div class="row">
+            <div class="col-lg-12">
+                <!-- `card border-top-0` (not `stretch`) because the tabs strip IS the card header. -->
+                <div class="card border-top-0" id="customer-form-card">
+                    <div class="card-header p-0">
+                        <ul class="nav nav-tabs flex-wrap w-100 text-center customers-nav-tabs" id="customer-form-tabs" role="tablist">
+                            <li class="nav-item flex-fill border-top" role="presentation">
+                                <a href="javascript:void(0);" id="customer-form-tab-profile" class="nav-link active" data-bs-toggle="tab" data-bs-target="#customer-form-pane-profile" role="tab">Profile</a>
+                            </li>
+                            <li class="nav-item flex-fill border-top" role="presentation">
+                                <a href="javascript:void(0);" id="customer-form-tab-address" class="nav-link" data-bs-toggle="tab" data-bs-target="#customer-form-pane-address" role="tab">Address</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="customer-form-pane-profile" role="tabpanel">
+                            <div class="card-body personal-info">
+                                <div class="mb-4 d-flex align-items-center justify-content-between">
+                                    <h5 class="fw-bold mb-0 me-4">
+                                        <span class="d-block mb-2">Customer Information:</span>
+                                        <span class="fs-12 fw-normal text-muted text-truncate-1-line">Following information is publicly displayed, be careful!</span>
+                                    </h5>
+                                </div>
+                                <div class="row mb-4 align-items-center" id="customer-form-field-name-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-name-label" for="customer-form-field-name" class="fw-semibold">Name: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <div class="input-group">
+                                            <div class="input-group-text"><i class="feather-user"></i></div>
+                                            <input type="text" class="form-control" id="customer-form-field-name" name="name" placeholder="Name" required />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-4 align-items-center" id="customer-form-field-email-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-email-label" for="customer-form-field-email" class="fw-semibold">Email: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <div class="input-group">
+                                            <div class="input-group-text"><i class="feather-mail"></i></div>
+                                            <input type="email" class="form-control" id="customer-form-field-email" name="email" placeholder="Email" required />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-4 align-items-center" id="customer-form-field-phone-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-phone-label" for="customer-form-field-phone" class="fw-semibold">Phone: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <div class="input-group">
+                                            <div class="input-group-text"><i class="feather-phone"></i></div>
+                                            <input type="tel" class="form-control" id="customer-form-field-phone" name="phone" placeholder="Phone" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-4 align-items-center" id="customer-form-field-status-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-status-label" for="customer-form-field-status" class="fw-semibold">Status: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <!-- Plain Bootstrap form-select by default: nothing to re-initialise after an
+                                             HTMX swap, which is the whole point (design-decisions.md).
+                                             If a project genuinely needs the colored select2 pill, this is where
+                                             `class="form-control" data-select2-selector="status"` plus
+                                             `<option data-bg="bg-success">` would go — the assets are already
+                                             vendored (assets/vendors/css/select2.min.css,
+                                             assets/vendors/js/select2.min.js + select2-active.min.js). You would
+                                             then have to re-run the select2 initialiser inside the shell's
+                                             htmx:afterSwap listener, since select2 builds its widget imperatively.
+                                             Option values follow the locked status-color vocabulary. -->
+                                        <select class="form-select" id="customer-form-field-status" name="status">
+                                            <option value="active" selected>Active</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="overdue">Overdue</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="draft">Draft</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-0 align-items-center" id="customer-form-field-notes-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-notes-label" for="customer-form-field-notes" class="fw-semibold">Notes: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <textarea class="form-control" id="customer-form-field-notes" name="notes" cols="30" rows="3" placeholder="Internal notes"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="customer-form-pane-address" role="tabpanel">
+                            <div class="card-body address-info">
+                                <div class="mb-4 d-flex align-items-center justify-content-between">
+                                    <h5 class="fw-bold mb-0 me-4">
+                                        <span class="d-block mb-2">Billing Address:</span>
+                                        <span class="fs-12 fw-normal text-muted text-truncate-1-line">Used on invoices and receipts.</span>
+                                    </h5>
+                                </div>
+                                <div class="row mb-4 align-items-center" id="customer-form-field-street-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-street-label" for="customer-form-field-street" class="fw-semibold">Street: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <div class="input-group">
+                                            <div class="input-group-text"><i class="feather-map-pin"></i></div>
+                                            <input type="text" class="form-control" id="customer-form-field-street" name="street" placeholder="Street address" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-4 align-items-center" id="customer-form-field-city-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-city-label" for="customer-form-field-city" class="fw-semibold">City: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <div class="input-group">
+                                            <div class="input-group-text"><i class="feather-map"></i></div>
+                                            <input type="text" class="form-control" id="customer-form-field-city" name="city" placeholder="City" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-0 align-items-center" id="customer-form-field-country-row">
+                                    <div class="col-lg-4">
+                                        <label id="customer-form-field-country-label" for="customer-form-field-country" class="fw-semibold">Country: </label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        <!-- Same note as Status above: data-select2-selector="country" is the
+                                             template's select2 flavor for this field, deliberately not used. -->
+                                        <select class="form-select" id="customer-form-field-country" name="country">
+                                            <option value="us" selected>United States</option>
+                                            <option value="gb">United Kingdom</option>
+                                            <option value="se">Sweden</option>
+                                            <option value="es">Spain</option>
+                                            <option value="in">India</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- NO submit button here on purpose — Save/Cancel are in the page header above. -->
+            </div>
+        </div>
+    </form>
+</div>
+<!-- [ Main Content ] end -->
