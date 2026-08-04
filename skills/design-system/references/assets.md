@@ -7,7 +7,7 @@ Paths are relative to the site root (pages live next to `assets/`).
 Head CSS (in `<head>`, in this order):
 
 ```html
-<link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico">
+<link rel="shortcut icon" type="image/png" href="assets/images/favicon.png">
 <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">   <!-- 1. Bootstrap 5.3 (theme build) -->
 <link rel="stylesheet" type="text/css" href="assets/vendors/css/vendors.min.css"> <!-- 2. vendor bundle -->
 <!-- 3. page-specific vendor CSS here (see per-page table) -->
@@ -86,7 +86,7 @@ Only reference the individual files listed in the per-page table; everything "al
 already inside `vendors.min.css` / `vendors.min.js`.
 
 `assets/vendors/fonts/` and `assets/vendors/img/` back the vendor CSS (icon fonts, flags).
-Other asset dirs: `assets/images/` (logo-full.png, logo-abbr.png, favicon.ico, avatar/*.png,
+Other asset dirs: `assets/images/` (logo-full.png, logo-abbr.png, favicon.png, avatar/*.png,
 brand/*.png), `assets/scss/` (source, not shipped).
 
 ## Theme customizer partial
