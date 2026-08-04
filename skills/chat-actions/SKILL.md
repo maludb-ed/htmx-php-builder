@@ -37,6 +37,17 @@ The sibling of the MCP tool surface: a designed registry, not an afterthought.
 - **Action registry:** every performable action — name (`exercise_record_set`), target endpoint, parameter schema, natural-language trigger description, **undo definition** (the inverse: delete the created row / restore prior values), and whether it may execute immediately or must confirm.
 - Both derive from the Phase 0 question/feature list. A screen or action missing from the manifest is unreachable by voice — treat that as unfinished design, exactly like a question with no MCP tool.
 
+## The `navigate` tool contract (the router's core)
+
+The single-tool-then-end-turn loop is the pattern: `tool_use(navigate)` → structured success → the model confirms in one sentence and ends the turn. Two model calls per command; run it at low effort.
+
+- **Input:** `screen` (a registry id) + optional `params` (dict). Params map to the canonical URL's query string — `navigate("exercise-add", {"name": "Bench Press"})` → `/exercises/new?name=Bench+Press`, and the GET controller pre-fills from query params like any request. Compound utterances ("go to create exercise and call it bench press") stay ONE call.
+- **The tool registers navigation; it does not perform it.** It validates the screen against the registry and returns structured JSON — `{"status": "success", "navigate": {"path": "...", "target": "#page-content"}}`. The assistant service extracts the `navigate` directive from the tool result and hands it to the PHP handler, which emits `HX-Location`; the browser executes the swap after the loop ends. A bare `"success"` string is a bug — the directive must live in the result.
+- **Terminal semantics, stated in the tool description:** "After success, confirm to the user in one short sentence and end the turn — no further tool calls. At most one navigation per message; a later call replaces an earlier one." This is what produces the clean `end_turn` instead of a wasted verify cycle. The tool must not claim post-navigation knowledge (annotations: `idempotentHint: true`, `destructiveHint: false` — it changes client view state, never records).
+- **Fail usefully:** an unknown screen returns the closest registry matches with their descriptions ("No screen 'exercise builder'. Closest: exercise-add — create a new exercise"), so the model self-corrects in one retry or asks one short question.
+
+Action tools follow the same shape: structured result (`status`, what was done, undo handle), terminal semantics, and any screen-refresh consequence expressed as an `HX-Trigger` event name in the directive rather than knowledge of the screen's markup.
+
 ## Confirmation policy (locked): act + undo
 
 - **Creates and updates execute immediately.** The reply states what was done in the interpreted terms ("Logged 3 × bench press @ 45 lbs") with an **Undo** control; "undo that" by voice resolves the last action from the conversation and activity log.
