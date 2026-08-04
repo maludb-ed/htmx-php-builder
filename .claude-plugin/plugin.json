@@ -5,5 +5,7 @@
   "author": {
     "name": "Edward Honour"
   },
+  "license": "MIT",
+  "repository": "https://github.com/maludb-ed/htmx-php-builder",
   "keywords": ["php", "htmx", "bootstrap", "postgres", "maludb", "memory-first"]
 }
