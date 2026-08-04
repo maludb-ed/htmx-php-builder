@@ -37,6 +37,8 @@ The sibling of the MCP tool surface: a designed registry, not an afterthought.
 - **Action registry:** every performable action — name (`exercise_record_set`), target endpoint, parameter schema, natural-language trigger description, **undo definition** (the inverse: delete the created row / restore prior values), and whether it may execute immediately or must confirm.
 - Both derive from the Phase 0 question/feature list. A screen or action missing from the manifest is unreachable by voice — treat that as unfinished design, exactly like a question with no MCP tool.
 
+Worked tool definitions — the `navigate` description/registry pattern and the slot-filling action-tool schema (unit-bearing field names, bounds, server-side entity resolution) — are in [references/tool-authoring.md](references/tool-authoring.md); read it before writing any actions-server tool.
+
 ## The `navigate` tool contract (the router's core)
 
 The single-tool-then-end-turn loop is the pattern: `tool_use(navigate)` → structured success → the model confirms in one sentence and ends the turn. Two model calls per command; run it at low effort.
