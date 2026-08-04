@@ -77,6 +77,13 @@ Action tools follow the same shape: structured result (`status`, what was done, 
 - Keep replies to one short sentence; this surface is a command bar, not a chat page.
 - Latency matters: run this route at low effort, and prefer the project's fastest acceptable model for router-only turns (configurable in one place, like AMA's model).
 
+## Streaming and live updates (locked): SSE from the assistant service — no SPA framework
+
+- **The view layer stays HTMX/server-rendered.** No React or other SPA framework for the assistant surfaces — persistent connections are a transport concern, not a view-layer one, and a second rendering paradigm would fork the design system.
+- **Long-lived connections belong to the Python assistant service, never PHP.** Apache/PHP pins a worker per held connection; the Agent SDK streams natively. Apache reverse-proxies `/assistant/stream` directly to the assistant service.
+- **The browser subscribes with the htmx SSE extension** (`hx-ext="sse"`): the AMA page streams long answers into its thread; the command bar may stream progress ("still working…") into `#assistant-reply` during multi-second agent loops. Command-bar router turns (two model calls at low effort) normally need no stream — a plain POST with an htmx indicator suffices.
+- If a future app needs a genuinely rich live surface (collaborative editing, realtime dashboards), that screen may take a JS island per the tech-stack upgrade rules — the application shell never becomes an SPA.
+
 ## Build order integration
 
 - **Phase 1:** design the action manifest (screen + action registries, undo definitions, confirm flags) alongside the schema and MCP tool surface; checkpoint covers all three.
