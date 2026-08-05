@@ -88,6 +88,37 @@ Build one feature at a time, end-to-end, in the order fixed in Phase 0. Each sli
 4. **Verify by utterance:** every manifest action and every screen reachable with a one-sentence spoken-style command; every Phase 0 question answerable.
 5. **Publish the client-facing endpoints**: a settings screen listing the two read-MCP URLs and managing access tokens, so clients can connect their own AI tools to their memories (SaaS Plus+). The actions server is never exposed.
 
+## Model tiering (who builds what)
+
+The workflow spends judgment once, up front, on the most capable model available, and hands the repetitive majority to cheaper worker models building against specs. Tier by **class** (specific models change; the classes don't):
+
+| Work | Model class | Current defaults |
+|---|---|---|
+| Phases 0–1: planning, schema, MCP tool surface, action manifest, **slice build specs** | Planning-class (most capable available) | Fable / Opus |
+| Phase 2: auth + shell | Planning-class — security judgment and one-time wiring | Opus |
+| Phase 3, **first slice** (the exemplar) | Planning-class | Opus |
+| Phase 3, remaining slices | Worker-class | Sonnet by default; Haiku for strictly templated slices |
+| Phase 4: MCP servers + unified assistant | Planning-class | Opus |
+| Per-slice conformance review | Planning-class at low effort — reviewing a diff costs far less than generating it | Opus/Sonnet |
+
+Four rules make worker-built slices safe:
+
+1. **Build-spec rule.** Phase 1 is not complete until every planned slice has a build spec per [references/slice-build-spec.md](references/slice-build-spec.md) — files, screens, fields, ids, endpoints, manifest entries, all enumerated. A worker model must never face a decision, only substitutions.
+2. **Exemplar-slice rule.** The planning-class model builds the first Phase 3 slice; it becomes the canonical reference. Worker prompts are phrased as **replication, not generation**: "Build the `{entity}` slice exactly like the `{exemplar}` slice, per its build spec." Small models replicate patterns far more reliably than they apply pattern documentation.
+3. **Conformance gate.** Every worker-built slice passes the mechanical checklist below, then a short planning-class review of the diff, before it counts as done.
+4. **Escalation rule.** Worker models never improvise. If the spec is ambiguous, conflicting, or missing something, the worker stops, records the exact question in the spec's Open Questions section, and escalates. An invented decision is a defect even when the code works.
+
+### Per-slice conformance checklist (mechanically checkable)
+
+- Zero `hx-push-url="true"` — every `hx-push-url` value is an explicit canonical URL
+- Zero `.modal` usage; `hx-confirm` appears only on destructive controls
+- All ids follow the kebab-case scheme (`{entity}-list-*`, `{entity}-form-field-*`, `{entity}-row-{id}-*`); no duplicates in any composed DOM
+- Every state-changing endpoint: `require_post()` + `verify_csrf()` + authorization check + `log_activity()`
+- All dynamic output through `e()`; prepared statements for values; allowlists for SQL identifiers
+- Files are exactly the prescribed slice set (php-patterns); query functions take `PDO` as first parameter and never touch request/response
+- The slice's screens and actions are registered in the action manifest; new questions have MCP tools
+- Manual: 375px viewport check; screen renders standalone and as a partial
+
 ## Hard rules that apply in every phase
 
 - **No modal forms or display pages.** No Bootstrap `.modal` for anything that shows or collects data. Create/edit/detail are dedicated full pages loaded via HTMX; quick edits may expand inline; offcanvas drawers only for filters/quick views and full-width on mobile. Confirmations are exempt: `hx-confirm` guards destructive actions.
