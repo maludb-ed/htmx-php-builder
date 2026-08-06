@@ -82,6 +82,10 @@ Two adjacent rules:
 - Partials carry their own `.page-header` + `.main-content` and swap the whole `#page-content` (`.nxl-content`) region; search/pagination refresh only the results region within the screen.
 - **Login/logout are full page navigations, never HTMX swaps** — session regeneration and the post-login redirect need a real navigation (see php-session-auth).
 
+## Scrollbars: always visible
+
+The theme's stock scrollbars (5px, near-invisible thumb, some hidden outright) are overridden by the sanctioned `assets/css/app-overrides.css`, loaded after `theme.min.css` on every page: 12px grabbable scrollbars with contrasting thumbs in light and dark mode. Never hide a scrollbar (`scrollbar-width: none`, `::-webkit-scrollbar { display: none }`) and never `overflow: hidden` on a content panel — fixed-height panels get `overflow-y: auto` and show their scrollbar.
+
 ## Interaction defaults (recap of plugin-wide rules)
 
 - Create/edit/detail: dedicated full pages via HTMX (`hx-get` + `hx-push-url` into the shell's swap target). No modal forms or display panels. The no-modal rule does **not** cover confirmations: destructive actions use `hx-confirm`.

@@ -26,7 +26,7 @@ Unified assistant service — Python, Claude Agent SDK (the SAME agent as AMA)
 
 - **One unified assistant.** The AMA page and the command bar are two surfaces of the same Agent SDK service: read tools (record/activity MCP servers), action tools, and navigation. One conversation memory per user; questions, actions, and navigation mix freely in a single utterance.
 - **The router is the LLM; the tools are MCP.** The agent never navigates or writes by itself — it activates a tool on the actions MCP server. Tool descriptions carry the routing knowledge (which screen/action serves which intent), so routing quality is a Phase 1 design artifact, not prompt luck.
-- **Actions go through the app's own controllers.** The actions server's tools call the same `public/{feature}/save.php`-style endpoints a human uses — same validation, same authorization, same activity logging. The **read MCP servers stay strictly read-only**; nothing ever writes around the PHP layer.
+- **Actions go through the app's own controllers.** The actions server's tools call the same `/var/www/html/{feature}/save.php`-style endpoints a human uses — same validation, same authorization, same activity logging. The **read MCP servers stay strictly read-only**; nothing ever writes around the PHP layer.
 - **The actions server is localhost-only** — unlike the client-facing read servers, it acts *as a user* and is reachable only by the assistant service. Per-request authority comes from a short-lived HMAC-signed action token minted by the PHP handler (user id + expiry); internal endpoints accept it in place of the session and enforce the same authorization.
 
 ## The action manifest (designed in Phase 1)

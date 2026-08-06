@@ -28,8 +28,10 @@ Avoid introducing controllers, repositories, services, DTOs, or entity classes i
 
 ## 1. Directory Structure
 
+On the deployment target — Ubuntu 24.04 with Apache — the web root is **`/var/www/html`** (Apache's default DocumentRoot). The application is built directly in that layout: `html/` plays the web-reachable role, and `app/` + `config/` sit beside it under `/var/www/`, **outside** the DocumentRoot, so they are unreachable over HTTP without any vhost changes.
+
 ```text
-project/
+/var/www/
 ├── app/
 │   ├── bootstrap.php
 │   ├── db.php
@@ -54,8 +56,9 @@ project/
 │               ├── form.php
 │               └── saved.php
 │
-├── public/
+├── html/                      ← Apache DocumentRoot (/var/www/html)
 │   ├── index.php
+│   ├── assets/                ← the design-system asset bundle
 │   │
 │   └── customers/
 │       ├── index.php
@@ -67,7 +70,9 @@ project/
     └── application.php
 ```
 
-This is a **vertical-slice structure**: everything related to the customer interface is grouped under `customers`, while executable endpoints remain under `public`. `public/customers/save.php` is callable through HTTP; `app/views/customers/partials/form.php` is included by PHP and must not be directly accessible through the web server.
+This is a **vertical-slice structure**: everything related to the customer interface is grouped under `customers`, while executable endpoints live in the web root at `/var/www/html`. `/var/www/html/customers/save.php` is callable through HTTP; `/var/www/app/views/customers/partials/form.php` is included by PHP and — because it sits outside the DocumentRoot — cannot be reached through the web server at all. Never place `app/` or `config/` inside `html/`.
+
+The endpoint `require` paths are unchanged from a `public/`-style layout because the relative depth is identical: from `/var/www/html/customers/save.php`, `dirname(__DIR__, 2) . '/app/bootstrap.php'` resolves to `/var/www/app/bootstrap.php` (from `/var/www/html/index.php`, it's `dirname(__DIR__) . '/app/bootstrap.php'`).
 
 ## 2. HTMX + PHP Patterns
 
@@ -286,7 +291,7 @@ function delete_customer(PDO $pdo, int $id): bool
 
 Use `RETURNING` on writes. A query function never touches `$_GET`/`$_POST`, HTMX, HTTP status codes, templates, or redirects — the controller reads the request and passes explicit values.
 
-## 6. The Dual Endpoint — `public/customers/index.php`
+## 6. The Dual Endpoint — `/var/www/html/customers/index.php`
 
 ```php
 <?php
@@ -339,7 +344,7 @@ Partials contain HTML, escaped output, and basic presentation conditions. They d
 
 ## 8. Form Endpoint and Partial
 
-`public/customers/form.php` loads the record (or a blank array for add), 404s when an id doesn't resolve, and renders `customers/partials/form.php` with `['customer' => ..., 'errors' => []]`.
+`/var/www/html/customers/form.php` loads the record (or a blank array for add), 404s when an id doesn't resolve, and renders `customers/partials/form.php` with `['customer' => ..., 'errors' => []]`.
 
 The form partial renders its container with a stable id, a validation-errors block when `$errors` is non-empty, a hidden `id` field on edit, and targets its own container so the server can replace it wholesale:
 
@@ -352,7 +357,7 @@ The form partial renders its container with a stable id, a validation-errors blo
 
 The response replacing it is either the form with validation errors, a success confirmation, or a refreshed form.
 
-## 9. Save Transaction Script — `public/customers/save.php`
+## 9. Save Transaction Script — `/var/www/html/customers/save.php`
 
 ```php
 require_post();
@@ -391,7 +396,7 @@ echo view('customers/partials/saved.php', ['customer' => $customer]);
 
 Flow: validation errors replace the form → a successful save replaces it with a confirmation (`saved.php`, same container id) → `HX-Trigger` fires `customersChanged` → the list refreshes itself. The save endpoint never knows the table's location or structure.
 
-`public/customers/delete.php`: `require_post()`, `verify_csrf()`, validate the id (400), run `delete_customer` (404 on false), return 200 — the requesting button's `hx-target="closest tr" hx-swap="delete"` removes the row.
+`/var/www/html/customers/delete.php`: `require_post()`, `verify_csrf()`, validate the id (400), run `delete_customer` (404 on false), return 200 — the requesting button's `hx-target="closest tr" hx-swap="delete"` removes the row.
 
 ## 10. Transactions
 

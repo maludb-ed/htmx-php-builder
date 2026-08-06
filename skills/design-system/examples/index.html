@@ -44,10 +44,11 @@
     <link rel="stylesheet" type="text/css" href="assets/vendors/css/vendors.min.css" />
     <!-- No page-specific vendor CSS: no DataTables, no select2, no daterangepicker on app screens
          (see design-decisions.md). If a screen ever needs select2, add select2.min.css HERE,
-         above theme.min.css — theme.min.css must always load last. -->
+         above theme.min.css — theme.min.css loads after all vendor CSS, and app-overrides.css always loads last. -->
     <!--! END: Vendors CSS-->
     <!--! BEGIN: Custom CSS-->
     <link rel="stylesheet" type="text/css" href="assets/css/theme.min.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/app-overrides.css" />
     <!--! END: Custom CSS-->
 </head>
 

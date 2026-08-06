@@ -32,9 +32,9 @@ Schema tables: {table names from the approved Phase 1 schema — never modify th
 - Tabs (only if the exemplar's form has tabs): {tab → fields}
 
 ## Files (exactly these — no additions)
-- public/{entities}/index.php · form.php · save.php · delete.php
-- app/features/{entities}/queries.php
-- app/views/{entities}/page.php · partials/table.php · row.php · form.php · saved.php
+- /var/www/html/{entities}/index.php · form.php · save.php · delete.php
+- /var/www/app/features/{entities}/queries.php
+- /var/www/app/views/{entities}/page.php · partials/table.php · row.php · form.php · saved.php
 
 ## Query functions (signatures fixed)
 - find_{entities}(PDO, search='', sort='{default}', page=1): array

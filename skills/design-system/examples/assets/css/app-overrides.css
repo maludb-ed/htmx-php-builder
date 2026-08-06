@@ -1,0 +1,56 @@
+/* app-overrides.css — the single sanctioned design-system override file.
+   ALWAYS the last stylesheet on every page, loaded after theme.min.css.
+   Plugin-level corrections to the theme live here and nowhere else.
+
+   VISIBLE SCROLLBARS
+   theme.min.css ships 5px scrollbars with a near-invisible thumb
+   (#e5e7eb on white; #19253f on #121a2d in dark mode) and hides some
+   entirely. Scrollable panels were unusable. These rules force clearly
+   visible, grabbable scrollbars everywhere, in both themes.
+   Never remove these; never use scrollbar-width:none or
+   ::-webkit-scrollbar{display:none}; never overflow:hidden on a
+   content panel. */
+
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #8a94a6 #eef0f3;
+}
+
+::-webkit-scrollbar {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #eef0f3 !important;
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #8a94a6 !important;
+    border-radius: 6px;
+    border: 2px solid #eef0f3;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #5b6b79 !important;
+}
+
+/* Dark mode (theme state lives on <html> as .app-skin-dark) */
+html.app-skin-dark * {
+    scrollbar-color: #54648a #121a2d;
+}
+
+html.app-skin-dark ::-webkit-scrollbar-track {
+    background-color: #121a2d !important;
+}
+
+html.app-skin-dark ::-webkit-scrollbar-thumb {
+    background-color: #54648a !important;
+    border-color: #121a2d;
+}
+
+html.app-skin-dark ::-webkit-scrollbar-thumb:hover {
+    background-color: #7286b2 !important;
+}

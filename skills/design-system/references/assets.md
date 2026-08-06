@@ -11,7 +11,8 @@ Head CSS (in `<head>`, in this order):
 <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">   <!-- 1. Bootstrap 5.3 (theme build) -->
 <link rel="stylesheet" type="text/css" href="assets/vendors/css/vendors.min.css"> <!-- 2. vendor bundle -->
 <!-- 3. page-specific vendor CSS here (see per-page table) -->
-<link rel="stylesheet" type="text/css" href="assets/css/theme.min.css">       <!-- 4. ALWAYS LAST: theme overrides -->
+<link rel="stylesheet" type="text/css" href="assets/css/theme.min.css">       <!-- 4. theme overrides -->
+<link rel="stylesheet" type="text/css" href="assets/css/app-overrides.css">  <!-- 5. ALWAYS LAST: sanctioned plugin overrides (visible scrollbars etc.) -->
 ```
 
 Bottom JS (end of `<body>`, in this order):
@@ -25,7 +26,7 @@ Bottom JS (end of `<body>`, in this order):
 ```
 
 Ordering rules that matter:
-- `theme.min.css` must come after all vendor CSS or component skins break.
+- `theme.min.css` must come after all vendor CSS or component skins break; `app-overrides.css` comes after `theme.min.css` so the sanctioned overrides (visible scrollbars) win the cascade.
 - `vendors.min.js` must load before anything else (jQuery lives there).
 - `common-init.min.js` must come before the page init and after all vendor JS.
 - `theme-customizer-init.min.js` is included on every page, even pages without the customizer

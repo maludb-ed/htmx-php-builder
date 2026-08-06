@@ -11,13 +11,13 @@ Every application uses the **feature-oriented Page Controller pattern** defined 
 
 | Responsibility | Implementation |
 |---|---|
-| Controller | Small procedural PHP endpoint under `public/{feature}/` |
+| Controller | Small procedural PHP endpoint under `/var/www/html/{feature}/` (the Apache DocumentRoot on Ubuntu 24.04) |
 | Data access | Procedural functions taking `PDO` as first param, in `app/features/{feature}/queries.php` |
 | Full-page view | `app/views/{feature}/page.php` (wrapped by `app/views/layout.php`) |
 | Fragment view | `app/views/{feature}/partials/*.php` |
 | Infrastructure | `app/bootstrap.php`, `app/db.php`, `app/http.php` |
 
-Vertical slices: one feature = one `public/{feature}/` endpoint set + one `app/features/{feature}/queries.php` + one `app/views/{feature}/` view set. Only `public/` is web-reachable. **No classes for controllers, repositories, services, DTOs, or entities** — extract shared procedural helpers only when duplication becomes substantial.
+Vertical slices: one feature = one `/var/www/html/{feature}/` endpoint set + one `/var/www/app/features/{feature}/queries.php` + one `/var/www/app/views/{feature}/` view set. **The web root is `/var/www/html`** (Apache's default DocumentRoot on Ubuntu 24.04) — build the application there, not in a `public/` directory; `app/` and `config/` sit beside `html/` under `/var/www/`, outside the DocumentRoot, and must never be placed inside it. **No classes for controllers, repositories, services, DTOs, or entities** — extract shared procedural helpers only when duplication becomes substantial.
 
 ## Controller sequence (every endpoint)
 
