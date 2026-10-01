@@ -70,7 +70,7 @@ button above; one card per stat, 4 across):
     <div class="accordion-body pb-2">
         <div class="row">
             <div class="col-xxl-3 col-md-6">
-                <div class="card stretch stretch-full">
+                <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3">
@@ -132,13 +132,14 @@ page header, not at the bottom of the form**, and a form page's header is a **pi
 
 ## Card container pattern
 
-Usage: every content block is a card inside a grid column. `stretch stretch-full` makes cards in
-a row equal height. Card header title + kebab dropdown from customers-view.html.
+Usage: every content block is a plain `.card` inside a grid column, as tall as its content. Never add
+the theme's `stretch stretch-full` (or any `.stretch*`): it sets `height: 100%` and turns form and
+summary cards into tall empty blocks. Card header title + kebab dropdown from customers-view.html.
 
 ```html
 <div class="row">
     <div class="col-lg-12">
-        <div class="card stretch stretch-full">
+        <div class="card">
             <div class="card-header">
                 <h5 class="card-title">Payment Record</h5>
                 <div class="dropdown">
@@ -180,7 +181,7 @@ From customers.html.
 ```html
 <div class="row">
     <div class="col-lg-12">
-        <div class="card stretch stretch-full">
+        <div class="card">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover" id="customerList">
@@ -365,7 +366,7 @@ From customers-create.html.
 </div>
 ```
 
-Note: `card border-top-0` (not `stretch`) is used when the tabs strip is the card header;
+Note: `card border-top-0` is used when the tabs strip is the card header;
 each `.nav-item` carries `flex-fill border-top` so tabs span the full card width.
 
 ## Detail/view page pattern
@@ -378,7 +379,7 @@ customers-view.html.
 <div class="row">
     <!-- LEFT: profile summary panel -->
     <div class="col-xxl-4 col-xl-6">
-        <div class="card stretch stretch-full">
+        <div class="card">
             <div class="card-body">
                 <div class="mb-4 text-center">
                     <div class="wd-150 ht-150 mx-auto mb-3 position-relative">

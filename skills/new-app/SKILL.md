@@ -112,6 +112,7 @@ Four rules make worker-built slices safe:
 
 - Zero `hx-push-url="true"` — every `hx-push-url` value is an explicit canonical URL
 - Zero `.modal` usage; `hx-confirm` appears only on destructive controls
+- Zero `stretch` / `stretch-full` classes on cards
 - All ids follow the kebab-case scheme (`{entity}-list-*`, `{entity}-form-field-*`, `{entity}-row-{id}-*`); no duplicates in any composed DOM
 - Every state-changing endpoint: `require_post()` + `verify_csrf()` + authorization check + `log_activity()`
 - All dynamic output through `e()`; prepared statements for values; allowlists for SQL identifiers

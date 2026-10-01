@@ -8,7 +8,7 @@ Source: `widgets-tables.html`, "Traffic Reports" card. A plain hover table in a 
 
 ```html
 <div class="col-lg-12">
-    <div class="card stretch stretch-full">
+    <div class="card">
         <div class="card-header">
             <h5 class="card-title">Customers</h5>
             <div class="card-header-action">
