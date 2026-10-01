@@ -91,11 +91,12 @@ The theme's stock scrollbars (5px, near-invisible thumb, some hidden outright) a
 - Create/edit/detail: dedicated full pages via HTMX (`hx-get` + `hx-push-url` into the shell's swap target). No modal forms or display panels. The no-modal rule does **not** cover confirmations: destructive actions use `hx-confirm`.
 - Quick single-field edits: inline swap. Filters/quick views only: offcanvas, full-width on mobile.
 - Form save/cancel buttons live in the page header (`.page-header-right-items-wrapper`); forms use the `col-lg-4` label / `col-lg-8` control horizontal grid with `input-group` icon prefixes.
+- Form headers are pinned (`page-header-form`): Cancel/Save stay in view at the top while the form scrolls, inline on phones; editing shows "Unsaved changes" and leaving asks first. No second Save at the bottom of a form.
 - Tabs on create/view pages: the card-header nav-tabs pattern (`.card.border-top-0 > .card-header.p-0 > ul.nav.nav-tabs...`).
 
 ## Assistant command bar (every screen)
 
-A fixed bottom command bar (`#assistant-bar`, input `#assistant-input`) ships on every screen — the voice-first entry point for chat actions and navigation (see the chat-actions skill). Latest exchange in `#assistant-reply` above the bar; full history in offcanvas `#assistant-transcript` (full-width on mobile); `Ctrl/Cmd+K` or `/` focuses the input. Body reserves bottom padding so the bar never covers content. Confirmation policy: creates/updates act immediately with an Undo affordance; destructive actions always confirm; navigation pushes explicit canonical URLs via `HX-Location`.
+A fixed bottom command bar (`#assistant-bar`, input `#assistant-input`) ships on every screen — the voice-first entry point for chat actions and navigation (see the chat-actions skill). Latest exchange in `#assistant-reply` above the bar; full history in offcanvas `#assistant-transcript` (full-width on mobile); `Ctrl/Cmd+K` or `/` focuses the input. Body reserves bottom padding so the bar never covers content. Its Send button (`#assistant-send-btn`) shows only while the bar has focus or holds text — an always-visible Send at the bottom of every screen was mistaken for the page's Save. Confirmation policy: creates/updates act immediately with an Undo affordance; destructive actions always confirm; navigation pushes explicit canonical URLs via `HX-Location`.
 
 ## Auth pages: minimal style
 

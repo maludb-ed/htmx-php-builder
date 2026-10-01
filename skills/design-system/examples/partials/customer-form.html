@@ -10,9 +10,13 @@
   full-container form, never a modal and never an inline drawer.
 
   Save/Cancel live in the PAGE HEADER, not at the bottom of the form (design-decisions.md).
+  A form header is a PINNED header: class "page-header-form" plus data-form="<form id>". It stays
+  under the top bar while the form scrolls (app-overrides.css), shows Cancel/Save inline on phones,
+  and carries the "Unsaved changes" badge that the shell's form guard reveals once the form is
+  edited (index.html). List, detail and report headers do not get the class.
 -->
 <!-- [ page-header ] start -->
-<div class="page-header" id="customer-form-header">
+<div class="page-header page-header-form" id="customer-form-header" data-form="customer-form">
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
             <!-- Static demo: hardcoded "Add". In PHP this title, the last breadcrumb crumb and
@@ -36,6 +40,10 @@
                 </a>
             </div>
             <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <!-- Hidden until the form is edited (.is-dirty on the header). -->
+                <span class="badge bg-soft-warning text-warning page-header-unsaved" id="customer-form-unsaved">
+                    <i class="feather-alert-circle me-1"></i>Unsaved changes
+                </span>
                 <!-- Cancel: straight back to the list. (hx-confirm is reserved for destructive actions, e.g. delete buttons.) -->
                 <a id="customer-form-cancel-btn" href="javascript:void(0);" class="btn btn-light-brand" hx-get="partials/customers-list.html" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="?screen=customers">
                     <i class="feather-x me-2"></i>

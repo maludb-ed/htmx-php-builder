@@ -510,6 +510,55 @@
             // screens (design-decisions.md). Tabs, dropdowns and collapse are delegated by
             // Bootstrap and keep working across swaps with no JS at all.
         });
+
+        // FORM GUARD (design-decisions.md "Form headers"). A form page's header is
+        // .page-header-form with data-form = the form's id. Editing that form adds .is-dirty to
+        // the header (badge + ringed Save, styled in app-overrides.css); leaving the page —
+        // any htmx request into #page-content that is not the form's own save, a reload, or
+        // closing the tab — asks first. A successful save clears the flag before its
+        // HX-Location navigation; a 422 re-render keeps it (the input is still unsaved).
+        // Two traps this code avoids, both seen in a real build:
+        //  - form.id is shadowed when the form contains <input name="id"> (every edit form
+        //    does), so the form's id is read with getAttribute('id').
+        //  - htmx's settle step re-applies the swapped header's class attribute, so a flag
+        //    set in htmx:afterSwap is wiped; set it in htmx:afterSettle.
+        (function () {
+            function header() { return document.querySelector("#page-content .page-header-form"); }
+            function dirty() { var h = header(); return !!(h && h.classList.contains("is-dirty")); }
+            function ownsForm(elt, h) {
+                if (!elt || !h) return false;
+                var form = elt.tagName === "FORM" ? elt : (elt.form || (elt.closest && elt.closest("form")));
+                return (form && form.getAttribute("id") === h.dataset.form)
+                    || (elt.getAttribute && elt.getAttribute("form") === h.dataset.form);
+            }
+            function mark(evt) {
+                var h = header(), t = evt.target;
+                if (h && t && t.type !== "hidden" && t.form && t.form.getAttribute("id") === h.dataset.form) h.classList.add("is-dirty");
+            }
+            document.addEventListener("input", mark);
+            document.addEventListener("change", mark);
+            document.body.addEventListener("htmx:confirm", function (evt) {
+                var h = header();
+                if (!dirty() || evt.detail.target !== document.getElementById("page-content") || ownsForm(evt.detail.elt, h)) return;
+                evt.preventDefault();
+                if (window.confirm("You have unsaved changes. Leave this page without saving?")) {
+                    h.classList.remove("is-dirty");
+                    evt.detail.issueRequest();
+                }
+            });
+            document.body.addEventListener("htmx:beforeOnLoad", function (evt) {
+                var h = header(), xhr = evt.detail.xhr;
+                if (h && xhr && xhr.status < 400 && ownsForm(evt.detail.elt, h)) h.classList.remove("is-dirty");
+            });
+            document.body.addEventListener("htmx:afterSettle", function (evt) {
+                if (evt.detail.target.id === "page-content" && evt.detail.xhr && evt.detail.xhr.status === 422) {
+                    var h = header(); if (h) h.classList.add("is-dirty");
+                }
+            });
+            window.addEventListener("beforeunload", function (e) {
+                if (dirty()) { e.preventDefault(); e.returnValue = ""; }
+            });
+        })();
     </script>
     <!--! END: HTMX !-->
     <!--! BEGIN: Vendors JS !-->

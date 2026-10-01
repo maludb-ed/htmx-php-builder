@@ -62,7 +62,7 @@ Design the complete database up front — every table for every planned feature,
 Goal: at the end of this phase the application *looks and feels exactly like the finished product*, with working login, even though it has no features yet.
 
 1. Build session auth (register, login, logout, reset) in vanilla PHP following the **php-session-auth** skill — all of its non-negotiables apply. The login page offers email/password **and** "Sign in with Google" (server-side OIDC per `references/google-signin.md`); authenticator-app 2FA (per `references/totp-2fa.md`) ships with its enrollment settings page and login challenge page. CSRF is wired for HTMX from the first shell render (meta tag + `htmx:configRequest` listener). Reset and verification emails go through the **malumail-send** skill's `malumail_send()` helper. Auth pages use the design-system minimal auth layout; login/logout/2FA are full page navigations, never swaps.
-2. Build the application shell from the **design-system** skill: the sidebar/header/footer layout, the HTMX content-swap target, an empty dashboard, the navigation stubs for every planned feature, and the **assistant command bar** (`#assistant-bar`, per chat-actions) wired to a stub handler so the surface exists from the first screen.
+2. Build the application shell from the **design-system** skill: the sidebar/header/footer layout, the HTMX content-swap target, an empty dashboard, the navigation stubs for every planned feature, and the **assistant command bar** (`#assistant-bar`, per chat-actions, with Send shown only while the bar is in use) wired to a stub handler so the surface exists from the first screen. Ship the shell's form guard script and the shared page-header partial that marks form headers `page-header-form` (design-system) now, so every slice's forms get the pinned Save and the unsaved-changes prompt for free.
 3. Wire activity logging into the shell from the first request: page entry, login/logout events.
 4. Verify on a mobile viewport (375px): navigation collapses correctly, no horizontal scroll, no modals anywhere.
 
@@ -117,7 +117,8 @@ Four rules make worker-built slices safe:
 - All dynamic output through `e()`; prepared statements for values; allowlists for SQL identifiers
 - Files are exactly the prescribed slice set (php-patterns); query functions take `PDO` as first parameter and never touch request/response
 - The slice's screens and actions are registered in the action manifest; new questions have MCP tools
-- Manual: 375px viewport check; screen renders standalone and as a partial
+- Every add/edit form page's header is `page-header-form` with `data-form` = its form id (via the shared page-header partial); no Save button outside the page header
+- Manual: 375px viewport check; screen renders standalone and as a partial; on a form, scroll to the bottom (Save still visible), edit a field ("Unsaved changes" shows), click a nav link (prompt appears)
 
 ## Hard rules that apply in every phase
 

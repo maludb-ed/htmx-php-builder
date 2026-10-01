@@ -96,21 +96,39 @@ button above; one card per stat, 4 across):
 </div>
 ```
 
-For form pages the action area holds Save/Cancel instead (customers-create.html) — note the
-**save buttons live in the page header, not at the bottom of the form**:
+For form pages the action area holds Cancel/Save instead — note the **save buttons live in the
+page header, not at the bottom of the form**, and a form page's header is a **pinned form header**
+(`page-header-form`). Full markup in `examples/partials/customer-form.html`:
 
 ```html
-<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
-    <a href="javascript:void(0);" class="btn btn-light-brand successAlertMessage">
-        <i class="feather-layers me-2"></i>
-        <span>Save as Draft</span>
-    </a>
-    <a href="javascript:void(0);" class="btn btn-primary successAlertMessage">
-        <i class="feather-user-plus me-2"></i>
-        <span>Create Customer</span>
-    </a>
+<div class="page-header page-header-form" id="customer-form-header" data-form="customer-form">
+    <!-- .page-header-left (title + breadcrumb) and the .page-header-right toggles as above -->
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <span class="badge bg-soft-warning text-warning page-header-unsaved" id="customer-form-unsaved">
+                    <i class="feather-alert-circle me-1"></i>Unsaved changes
+                </span>
+                <a id="customer-form-cancel-btn" class="btn btn-light-brand" hx-get="/customers/" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="/customers/">
+                    <i class="feather-x me-2"></i><span>Cancel</span>
+                </a>
+                <button type="submit" form="customer-form" id="customer-form-save-btn" class="btn btn-primary">
+                    <i class="feather-check me-2"></i><span>Save Customer</span>
+                </button>
+            </div>
 </div>
 ```
+
+- `page-header-form` + `data-form="{form id}"` go on the header of **every add/edit form page and
+  only those**; list, detail and report headers scroll normally. In PHP, have the shared page-header
+  partial add them whenever its actions contain a `type="submit" form="…"` button, so no screen can
+  forget.
+- The pinned header (app-overrides.css) keeps Cancel/Save in view under the top bar however far the
+  form scrolls. Do **not** add a second Save at the bottom of the form: the bottom of the screen
+  belongs to the assistant bar, and a Save next to its Send is exactly the confusion this prevents.
+- On phones the form header shows Cancel/Save inline (Cancel as an icon) instead of in the slide-out
+  action panel. Keep the open/close toggle markup anyway — the CSS hides it for form headers.
+- The shell's form guard (`examples/index.html`) adds `.is-dirty` to the header once the form is
+  edited, which reveals the badge and rings Save, and asks before any navigation away. Save button
+  labels name the record ("Save Customer"), never a bare "Send"/"Submit".
 
 ## Card container pattern
 

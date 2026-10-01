@@ -54,3 +54,51 @@ html.app-skin-dark ::-webkit-scrollbar-thumb {
 html.app-skin-dark ::-webkit-scrollbar-thumb:hover {
     background-color: #7286b2 !important;
 }
+
+/* ASSISTANT SEND BUTTON: shown only while the command bar is in use.
+   A permanently visible "Send" at the bottom of the screen was being
+   mistaken for the page's Save button (and Save had scrolled out of view).
+   #assistant-send-btn must come AFTER #assistant-input inside the same
+   .input-group, and the input needs a non-empty placeholder: the button is
+   hidden while the input is empty, and shown while anything in the form has
+   focus (including the button itself, so a click is never lost) or the input
+   holds text. Enter still submits. */
+.assistant-form #assistant-input:placeholder-shown ~ #assistant-send-btn { display: none; }
+.assistant-form:focus-within #assistant-input ~ #assistant-send-btn { display: inline-block; }
+
+/* FORM HEADERS: the .page-header of every add/edit form carries the class
+   .page-header-form and data-form="{form id}". It stays pinned under the
+   80px fixed .nxl-header while the form scrolls, so Cancel/Save are always
+   in view at the TOP of the screen, as far as possible from the assistant's
+   Send at the bottom. List, detail and report headers scroll normally.
+   .is-dirty (set by the shell's form guard script) shows the
+   "Unsaved changes" badge and rings the Save button. */
+.page-header.page-header-form { position: sticky; top: 80px; z-index: 1023; }
+.page-header-form .page-header-unsaved { display: none; }
+.page-header-form.is-dirty .page-header-unsaved { display: inline-flex; align-items: center; }
+.page-header-form.is-dirty [type="submit"] { box-shadow: 0 0 0 3px rgba(255, 166, 0, .45); }
+
+/* Phones: a form header shows Cancel/Save inline (not in the theme's
+   slide-out action panel, where Save would be one more tap away), drops
+   the breadcrumb, and truncates the title to one line. Cancel becomes an
+   icon; Save keeps its label. */
+@media (max-width: 767.98px) {
+    .page-header.page-header-form { padding: 8px 12px; min-height: 56px; gap: 8px; }
+    .page-header-form .breadcrumb { display: none; }
+    .page-header-form .page-header-title { border-right: 0 !important; margin-right: 0 !important; padding-right: 0 !important; min-width: 0; }
+    .page-header-form .page-header-title h5 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0; }
+    .page-header-form .page-header-left { min-width: 0; flex: 1 1 auto; }
+    .page-header-form .page-header-right-open-toggle,
+    .page-header-form .page-header-right-close-toggle { display: none !important; }
+    .nxl-container .nxl-content .page-header.page-header-form .page-header-right .page-header-right-items {
+        position: static; opacity: 1; visibility: visible; transform: none; width: auto; height: auto;
+        border: 0; background: transparent; box-shadow: none;
+    }
+    .nxl-container .nxl-content .page-header.page-header-form .page-header-right .page-header-right-items .page-header-right-items-wrapper {
+        padding: 0; flex-direction: row; flex-wrap: nowrap;
+    }
+    .page-header-form .page-header-right-items-wrapper .btn:not([type="submit"]) span { display: none; }
+    .page-header-form .page-header-right-items-wrapper .btn:not([type="submit"]) i { margin-right: 0 !important; }
+    .page-header-form .page-header-unsaved { font-size: 0; padding: 6px; }
+    .page-header-form .page-header-unsaved i { font-size: 14px; margin-right: 0 !important; }
+}

@@ -67,6 +67,19 @@ Action tools follow the same shape: structured result (`status`, what was done, 
 ## The command bar UI (locked design)
 
 - **Fixed bottom bar** on every screen, rendered by the shell: `#assistant-bar` with input `#assistant-input`, send `#assistant-send-btn`. Slim, always visible, above the footer; full-width and thumb-reachable on mobile; never overlaps `#page-content` scroll (body gets bottom padding).
+- **Send appears only while the bar is in use** — when anything in `#assistant-form` has focus or `#assistant-input` holds text; otherwise the bar is just the input (plus the transcript button). A permanently visible Send at the bottom of every screen was mistaken for the page's Save button, which sits at the top of the form. Pure CSS in the design system's `app-overrides.css` (no JS): the form has class `assistant-form`, `#assistant-send-btn` follows `#assistant-input` in the same `.input-group`, and the input has a non-empty placeholder (the rule keys on `:placeholder-shown`). Focus on the button itself keeps it visible, so a click is never lost; Enter submits as always.
+
+```html
+<form id="assistant-form" class="assistant-form" hx-post="/assistant/message" hx-target="#assistant-reply" hx-swap="innerHTML">
+    <div class="input-group">
+        <span class="input-group-text"><i class="feather-message-circle"></i></span>
+        <input type="text" class="form-control" id="assistant-input" name="message" autocomplete="off"
+               placeholder="Say what you want to do, or ask a question (Ctrl+K)" />
+        <button type="submit" class="btn btn-primary" id="assistant-send-btn"><i class="feather-send"></i><span class="d-none d-sm-inline ms-2">Send</span></button>
+        <button type="button" class="btn btn-light-brand" id="assistant-transcript-btn" data-bs-toggle="offcanvas" data-bs-target="#assistant-transcript" title="Conversation"><i class="feather-list"></i></button>
+    </div>
+</form>
+```
 - The latest exchange renders in `#assistant-reply` expanding upward from the bar; full history in the offcanvas transcript `#assistant-transcript` (full-width on mobile). No modals.
 - `Ctrl/Cmd+K` (and `/` outside inputs) focuses the input — dictation tools type into the focused field, so focus-fast matters more than any mic button. Enter submits; the input clears and refocuses for the next utterance.
 - **Screen context travels with every message:** each screen partial stamps `#page-content` with `data-screen`, `data-entity`, `data-record-id`; the bar submits them via `hx-vals` (js) alongside the text. This is how "that" resolves.

@@ -29,6 +29,6 @@ Every screen must be indistinguishable in style from the rest of the application
 ## Consistency checklist (apply to every screen)
 
 - Every meaningful element carries a unique, stable, kebab-case `id` following the scheme in `design-decisions.md` (`{screen}-{element}`, `{screen}-field-{name}`, `{entity}-row-{id}`, …); verify no id collides with the shell's or the screen's own ids.
-- Page header block (title + breadcrumb + actions) copied from the canonical pattern — same classes, same structure.
+- Page header block (title + breadcrumb + actions) copied from the canonical pattern — same classes, same structure. Create/edit forms use the pinned form header (`page-header-form` + `data-form`, unsaved badge) from `components.md`; Save/Cancel only in that header.
 - Cards, buttons, badges, form controls use only classes that appear in `components.md`. If a needed component is missing there, extend the design system reference first, then use it — never improvise one-off styling.
 - No inline `style=` attributes; no new CSS files unless the user explicitly approves adding to the theme.
