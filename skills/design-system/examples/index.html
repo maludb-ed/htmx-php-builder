@@ -562,6 +562,17 @@
     </script>
     <!--! END: HTMX !-->
     <!--! BEGIN: Vendors JS !-->
+    <script>
+        // Keep --assistant-bar-height equal to the bar's real height (it grows when a reply
+        // shows), so body padding and the pinned footer always clear it (app-overrides.css).
+        (function () {
+            var bar = document.getElementById('assistant-bar');
+            if (!bar) { return; }
+            var apply = function () { document.documentElement.style.setProperty('--assistant-bar-height', bar.offsetHeight + 'px'); };
+            apply();
+            if (window.ResizeObserver) { new ResizeObserver(apply).observe(bar); } else { window.addEventListener('resize', apply); }
+        })();
+    </script>
     <script src="assets/vendors/js/vendors.min.js"></script>
     <!-- vendors.min.js {always must need to be top} -->
     <!-- No page-specific vendor JS: no dataTables.min.js, no select2.min.js, no apexcharts. -->

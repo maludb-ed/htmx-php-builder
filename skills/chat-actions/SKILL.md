@@ -66,7 +66,7 @@ Action tools follow the same shape: structured result (`status`, what was done, 
 
 ## The command bar UI (locked design)
 
-- **Fixed bottom bar** on every screen, rendered by the shell: `#assistant-bar` with input `#assistant-input`, send `#assistant-send-btn`. Slim, always visible, above the footer; full-width and thumb-reachable on mobile; never overlaps `#page-content` scroll (body gets bottom padding).
+- **Fixed bottom bar** on every screen, rendered by the shell: `#assistant-bar` with input `#assistant-input`, send `#assistant-send-btn`. Slim, always visible; the shell footer (`#page-footer`) is pinned directly above it; full-width and thumb-reachable on mobile; never overlaps `#page-content` scroll (the shell measures the bar into `--assistant-bar-height`, which pads the body and sizes the footer pin, per the design system's `app-overrides.css`).
 - **Send appears only while the bar is in use** — when anything in `#assistant-form` has focus or `#assistant-input` holds text; otherwise the bar is just the input (plus the transcript button). A permanently visible Send at the bottom of every screen was mistaken for the page's Save button, which sits at the top of the form. Pure CSS in the design system's `app-overrides.css` (no JS): the form has class `assistant-form`, `#assistant-send-btn` follows `#assistant-input` in the same `.input-group`, and the input has a non-empty placeholder (the rule keys on `:placeholder-shown`). Focus on the button itself keeps it visible, so a click is never lost; Enter submits as always.
 
 ```html

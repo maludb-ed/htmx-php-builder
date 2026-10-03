@@ -55,6 +55,38 @@ html.app-skin-dark ::-webkit-scrollbar-thumb:hover {
     background-color: #7286b2 !important;
 }
 
+/* ASSISTANT COMMAND BAR (chat-actions skill): fixed bottom bar on every
+   screen, aligned with the content area beside the sidebar; body reserves
+   room so the bar never covers #page-content. The shell measures the bar
+   (ResizeObserver) into --assistant-bar-height; 84px is the fallback. */
+:root { --assistant-bar-height: 84px; }
+body { padding-bottom: var(--assistant-bar-height); }
+.assistant-bar {
+    position: fixed; left: 280px; right: 0; bottom: 0; z-index: 1025;
+    padding: 10px 30px; background: #fff; border-top: 1px solid #e5e7eb;
+    transition: left .3s ease;
+}
+html.minimenu .assistant-bar { left: 100px; }
+@media (max-width: 1024px) { .assistant-bar { left: 0; padding: 8px 12px; } }
+.assistant-reply {
+    max-height: 40vh; overflow-y: auto; margin-bottom: 8px; padding: 10px 14px;
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px;
+}
+.assistant-bar .input-group .btn { min-height: 44px; }
+.assistant-bar .form-control { min-height: 44px; }
+html.app-skin-dark .assistant-bar { background: #0f172a; border-top-color: #19253f; }
+html.app-skin-dark .assistant-reply { background: #121a2d; border-color: #19253f; }
+@media (max-width: 575px) { .assistant-transcript { width: 100% !important; } }
+
+/* PINNED FOOTER: the shell footer (#page-footer) sits at the bottom of the viewport,
+   directly above the assistant bar, when a screen is shorter than the viewport, and
+   follows the content when the screen is longer. The theme shifts .nxl-container down
+   80px under the fixed header (position: relative; top: 80px), so its minimum height is
+   the viewport less the header and the bar; the content region grows to fill it. */
+.nxl-container { display: flex; flex-direction: column; min-height: calc(100vh - 80px - var(--assistant-bar-height)); }
+.nxl-container > .nxl-content { flex: 1 0 auto; }
+.nxl-container > .footer { margin-top: auto; }
+
 /* ASSISTANT SEND BUTTON: shown only while the command bar is in use.
    A permanently visible "Send" at the bottom of the screen was being
    mistaken for the page's Save button (and Save had scrolled out of view).

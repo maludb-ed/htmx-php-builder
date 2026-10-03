@@ -3,7 +3,7 @@
   Every authenticated page uses this exact structure. Fidelity notes:
   - <html lang="zxx"> with NO body class. Dark mode = class "app-skin-dark" added to <html> (persisted in localStorage key "app-skin-dark" by theme-customizer-init.min.js).
   - Sidebar collapse (desktop) = class "minimenu" on <html>. Mobile slide-in = class "mob-navigation-active" on nav.nxl-navigation (toggled by #mobile-collapse in nxlNavigation.min.js, which also appends a .nxl-menu-overlay div).
-  - Page order in <body>: nav.nxl-navigation, header.nxl-header, main.nxl-container (contains .nxl-content > .page-header + .main-content, then footer.footer), theme customizer, scripts.
+  - Page order in <body>: nav.nxl-navigation, header.nxl-header, main.nxl-container (contains .nxl-content > .page-header + .main-content, then footer.footer#page-footer, pinned to the bottom above the assistant bar by app-overrides.css), the assistant bar (chat-actions), theme customizer, scripts.
   - TRIMMED: sidebar menu reduced to 3 representative items (original has ~12); the header-left "nxl-lavel-mega-menu" block (~1400 lines of mega-menu dropdowns, original lines 300-1706) reduced to its toggler + a placeholder comment; header search/timesheets/notifications dropdown bodies trimmed; user dropdown trimmed to essentials; theme customizer replaced by a comment (use partials/customizer.html).
 -->
 <!DOCTYPE html>
@@ -290,7 +290,7 @@
         </div>
         <!-- [ Footer ] start -->
         <!-- NOTE: footer sits INSIDE main.nxl-container, after .nxl-content -->
-        <footer class="footer">
+        <footer class="footer" id="page-footer">
             <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
                 <span>Copyright ©</span>
                 <script>
@@ -315,6 +315,17 @@
     <!--! Footer Script !-->
     <!--! ================================================================ !-->
     <!--! BEGIN: Vendors JS !-->
+    <script>
+        // Keep --assistant-bar-height equal to the bar's real height (it grows when a reply
+        // shows), so body padding and the pinned footer always clear it (app-overrides.css).
+        (function () {
+            var bar = document.getElementById('assistant-bar');
+            if (!bar) { return; }
+            var apply = function () { document.documentElement.style.setProperty('--assistant-bar-height', bar.offsetHeight + 'px'); };
+            apply();
+            if (window.ResizeObserver) { new ResizeObserver(apply).observe(bar); } else { window.addEventListener('resize', apply); }
+        })();
+    </script>
     <script src="assets/vendors/js/vendors.min.js"></script>
     <!-- vendors.min.js {always must need to be top} -->
     <!-- PAGE-SPECIFIC vendor JS goes here, e.g.:
